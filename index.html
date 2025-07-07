@@ -98,7 +98,7 @@
 
   <div id="gameUI">
     <p style="margin-top: 20px; font-size: 16px; color: #ccc;">予想したい3ケタの数字を入力してね</p>
-    <input id="guess" maxlength="3" placeholder="例:123" inputmode="numeric" />
+    <input id="guess" maxlength="3" placeholder="例:123" />
     <button onclick="playGame()">プレイ</button>
     <button onclick="restartGame()">再プレイ</button>
     <div id="log"></div>
@@ -108,28 +108,77 @@
     <h2>ルール</h2>
     <p>3桁の数字を当てる記憶ゲームだよ。数字はすべて異なるよ。</p>
   </div>
-
   <div class="section" id="section-record">
     <h2>記録とランキング</h2>
-    <button id="loginBtn">Googleでログイン</button>
-    <button id="logoutBtn" style="display:none;">ログアウト</button>
-    <div id="userStats"></div>
-    <div id="ranking"></div>
+    <p>ここにプレイ記録やランキングが表示される予定だよ！</p>
   </div>
-
   <div class="section" id="section-about">
     <h2>自己紹介</h2>
     <p>暇人です。お金ないです。寄付まってます💛</p>
   </div>
-
   <div class="section" id="section-donate">
     <h2>寄付</h2>
     <p>まだ準備中だよ！</p>
   </div>
 
-  <audio id="correctSound" src="correct.mp3"></audio>
-  <audio id="clickSound" src="click.mp3"></audio>
-
-  <script type="module" src="main.js"></script>
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("menuList");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+    function showSection(id) {
+      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+      document.getElementById("section-" + id).style.display = "block";
+      document.getElementById("gameUI").style.display = "none";
+      document.getElementById("startBtn").style.display = "block";
+      document.getElementById("description").style.display = "block";
+    }
+    function startGame() {
+      document.getElementById("gameUI").style.display = "block";
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("description").style.display = "none";
+      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+      generateSecret();
+    }
+    function restartGame() {
+      document.getElementById("log").innerHTML = "";
+      startGame();
+    }
+    let secret = "";
+    function generateSecret() {
+      const digits = [];
+      while (digits.length < 3) {
+        const d = Math.floor(Math.random() * 10).toString();
+        if (!digits.includes(d)) digits.push(d);
+      }
+      secret = digits.join("");
+    }
+    function playGame() {
+      const guessInput = document.getElementById("guess");
+      let guess = guessInput.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).trim();
+      if (!/^\d{3}$/.test(guess)) {
+        alert("3桁の数字を入力してね");
+        return;
+      }
+      if (new Set(guess).size !== 3) {
+        alert("数字は重複しない3桁で入力してね");
+        return;
+      }
+      let hit = 0, blow = 0;
+      for (let i = 0; i < 3; i++) {
+        if (guess[i] === secret[i]) hit++;
+        else if (secret.includes(guess[i])) blow++;
+      }
+      const log = document.getElementById("log");
+      const entry = document.createElement("p");
+      entry.textContent = `予想: ${guess} → 結果: ${hit} Hit / ${blow} Blow`;
+      log.appendChild(entry);
+      guessInput.value = "";
+      if (hit === 3) {
+        alert("3Hit！クリアおめでとう！");
+        startGame();
+      }
+    }
+  </script>
 </body>
 </html>
