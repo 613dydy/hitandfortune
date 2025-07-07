@@ -109,6 +109,19 @@
       margin-right: auto;
       text-align: center;
     }
+    #bgmToggle {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: #111;
+      border: 2px solid #FFD700;
+      border-radius: 5px;
+      padding: 10px;
+      color: #FFD700;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
@@ -120,6 +133,8 @@
     <button onclick="showSection('about')">自己紹介</button>
     <button onclick="showSection('donate')">寄付</button>
   </div>
+  <button id="bgmToggle" onclick="toggleBGM()">BGM オン/オフ</button>
+  <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_14f8f6a3d8.mp3?filename=battle-theme-a-9616.mp3" loop></audio>
 
   <h1>Hit & Blow</h1>
   <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
@@ -204,6 +219,19 @@
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
     document.getElementById("log").innerHTML = "";
     document.getElementById("menuList").style.display = "none";
+
+    const bgm = document.getElementById("bgm");
+    bgm.volume = 0.3;
+    bgm.play().catch(() => {});
+  }
+
+  function toggleBGM() {
+    const bgm = document.getElementById("bgm");
+    if (bgm.paused) {
+      bgm.play();
+    } else {
+      bgm.pause();
+    }
   }
 
   function playGame() {
