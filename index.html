@@ -131,11 +131,11 @@
   </div>
 
   <!-- 寄付 -->
-  <div id="section-donate">
-  <h2>寄付</h2>
-  <p>ありがとう！こちらのQRコードから寄付してね！</p>
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://qr.paypay.ne.jp/p2p01_Pi52F4YbQaCIx7de" alt="PayPay寄付用QRコード" />
-</div>
+  <div id="section-donate" class="section">
+    <h2>寄付</h2>
+    <p>ありがとう！こちらのQRコードから寄付してね！</p>
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://qr.paypay.ne.jp/p2p01_Pi52F4YbQaCIx7de" alt="PayPay寄付用QRコード" />
+  </div>
 
   <!-- 効果音 -->
   <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
@@ -182,11 +182,28 @@
     // セクション表示
     window.showSection = function(id) {
       playClick();
+
+      // すべての.sectionを非表示にする（寄付も含む）
       document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-      document.getElementById("section-" + id).style.display = "block";
-      document.getElementById("gameUI").style.display = "none";
-      document.getElementById("startBtn").style.display = "block";
-      document.getElementById("description").style.display = "block";
+
+      if (id === "donate") {
+        // 寄付項目の表示
+        document.getElementById("section-donate").style.display = "block";
+
+        // ゲームUIやボタンは隠す
+        document.getElementById("gameUI").style.display = "none";
+        document.getElementById("startBtn").style.display = "none";
+        document.getElementById("description").style.display = "block";
+      } else {
+        // 寄付以外のセクション表示
+        document.getElementById("section-" + id).style.display = "block";
+
+        // ゲーム開始前のボタンと説明表示
+        document.getElementById("gameUI").style.display = "none";
+        document.getElementById("startBtn").style.display = "block";
+        document.getElementById("description").style.display = "block";
+      }
+
       document.getElementById("startBtn").style.marginTop = "50px";
       document.getElementById("guess").value = "";
       clearLog();
