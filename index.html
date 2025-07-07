@@ -140,9 +140,9 @@
   </div>
   <div id="section-record" class="section">
     <h2>記録</h2>
-    <div id="recordContent">
-      <p>まだ記録がないよ！ゲームをプレイしてね。</p>
-    </div>
+    <div id="recordContent"></div>
+    <h3>ランキング（クリア回数）</h3>
+    <div id="rankingContent"></div>
   </div>
   <div id="section-about" class="section">
     <h2>自己紹介</h2>
@@ -156,11 +156,7 @@
 <script>
   let answer = [];
   let turn = 0;
-  let record = {
-    playCount: 0,
-    clearCount: 0,
-    fastClearCount: 0,
-  };
+  let playerName = localStorage.getItem("playerName") || "ゲスト" + Math.floor(Math.random() * 1000);
 
   function toHalfWidth(str) {
     return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
@@ -189,10 +185,14 @@
     document.getElementById("description").style.display = "block";
     document.getElementById("startBtn").style.marginTop = "60px";
     document.getElementById("menuList").style.display = "none";
+
+    if (id === "record") {
+      showRecord();
+    }
   }
 
   function startGame() {
-    record = loadRecord();
+    let record = loadRecord();
     record.playCount++;
     saveRecord(record);
 
@@ -217,7 +217,6 @@
     turn++;
     const guess = input.split('').map(Number);
     let hit = 0, blow = 0;
-
     for (let i = 0; i < 3; i++) {
       if (guess[i] === answer[i]) {
         hit++;
@@ -231,9 +230,11 @@
 
     if (hit === 3) {
       log.innerHTML += `<p class="correct">🎉 正解！新しい数字を用意したよ！</p>`;
+      let record = loadRecord();
       record.clearCount++;
       if (turn <= 4) record.fastClearCount++;
       saveRecord(record);
+      saveToRanking(record.clearCount);
       answer = generateAnswer();
       turn = 0;
     }
@@ -253,29 +254,46 @@
     return stored ? JSON.parse(stored) : {
       playCount: 0,
       clearCount: 0,
-      fastClearCount: 0,
+      fastClearCount: 0
     };
   }
 
-  function saveRecord(rec) {
-    localStorage.setItem("hitblowRecord", JSON.stringify(rec));
+  function saveRecord(record) {
+    localStorage.setItem("hitblowRecord", JSON.stringify(record));
   }
 
   function showRecord() {
-    record = loadRecord();
+    const record = loadRecord();
     const recDiv = document.getElementById("recordContent");
-    if (record.playCount === 0) {
-      recDiv.innerHTML = "<p>まだ記録がないよ！ゲームをプレイしてね。</p>";
-    } else {
-      recDiv.innerHTML = `
-        <p>プレイ回数: ${record.playCount}</p>
-        <p>合計クリア回数: ${record.clearCount}</p>
-        <p>4ターン以内クリア回数: ${record.fastClearCount}</p>
-      `;
+    recDiv.innerHTML = `
+      <p>プレイ回数: ${record.playCount}</p>
+      <p>合計クリア回数: ${record.clearCount}</p>
+      <p>4ターン以内クリア回数: ${record.fastClearCount}</p>
+    `;
+
+    const ranking = JSON.parse(localStorage.getItem("hitblowRanking") || "[]");
+    ranking.sort((a, b) => b.score - a.score);
+    let html = "<ol>";
+    for (let i = 0; i < Math.min(5, ranking.length); i++) {
+      const r = ranking[i];
+      html += `<li>${r.name}（${r.score}回）</li>`;
     }
+    html += "</ol>";
+    const myRank = ranking.findIndex(r => r.name === playerName) + 1;
+    html += `<p>あなたの順位: ${myRank > 0 ? myRank : "圏外"}</p>`;
+    document.getElementById("rankingContent").innerHTML = html;
   }
 
-  document.querySelector('button[onclick="showSection(\'record\')"]').addEventListener("click", showRecord);
+  function saveToRanking(score) {
+    let ranking = JSON.parse(localStorage.getItem("hitblowRanking") || "[]");
+    const existing = ranking.find(r => r.name === playerName);
+    if (existing) {
+      existing.score = score;
+    } else {
+      ranking.push({ name: playerName, score });
+    }
+    localStorage.setItem("hitblowRanking", JSON.stringify(ranking));
+  }
 </script>
 </body>
 </html>
