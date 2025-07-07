@@ -5,44 +5,84 @@
   <title>Hit & Blow Gamble</title>
   <style>
     body {
-      background-color: #111;
-      color: #fff;
-      font-family: 'Courier New', monospace;
+      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+      color: #e0e0e0;
+      font-family: 'Georgia', serif;
       text-align: center;
-      padding: 30px;
+      padding: 40px;
     }
 
     h1 {
-      color: gold;
+      color: #FFD700;
+      font-size: 36px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
     }
 
     input {
-      padding: 8px;
-      font-size: 16px;
-      width: 80px;
+      padding: 10px;
+      font-size: 20px;
+      width: 100px;
       text-align: center;
-      margin-top: 10px;
+      background: #111;
+      color: #FFD700;
+      border: 2px solid #FFD700;
+      border-radius: 8px;
+      margin-top: 20px;
     }
 
     button {
-      padding: 10px 20px;
+      padding: 12px 30px;
       font-size: 16px;
-      margin-top: 15px;
-      margin: 5px;
-      background-color: gold;
-      border: none;
+      background: transparent;
+      color: #FFD700;
+      border: 2px solid #FFD700;
+      border-radius: 8px;
+      margin: 10px;
       cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #FFD700;
+      color: #111;
+      box-shadow: 0 0 10px #FFD70055;
+    }
+
+    #coins {
+      color: #FFD700;
+      font-size: 22px;
     }
 
     #log {
-      margin-top: 20px;
+      margin-top: 30px;
       font-size: 18px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+      background: #1a1a1a;
+      padding: 20px;
+      border: 1px solid #444;
+      border-radius: 10px;
+      box-shadow: 0 0 5px #000;
+    }
+
+    #log p {
+      margin: 8px 0;
+      transition: all 0.3s ease;
+    }
+
+    #log p.correct {
+      color: #8fce00;
+      font-weight: bold;
+      text-shadow: 0 0 5px #8fce0080;
     }
   </style>
 </head>
 <body>
 
-  <h1>💰Hit & Blow Gamble💰</h1>
+  <h1>Hit & Blow Gamble</h1>
   <p>所持コイン: <span id="coins">100</span></p>
 
   <input id="guess" maxlength="3" placeholder="例:123">
@@ -90,12 +130,13 @@
       }
 
       const result = `結果: ${hit} Hit / ${blow} Blow`;
-      document.getElementById("log").innerHTML += `<p>予想: ${input} → ${result}</p>`;
+      const log = document.getElementById("log");
+      log.innerHTML += `<p>予想: ${input} → ${result}</p>`;
 
       if (hit === 3) {
-        document.getElementById("log").innerHTML += `<p style="color:lime;">🎉 正解！30コイン獲得！</p>`;
+        log.innerHTML += `<p class="correct">🎉 正解！30コイン獲得！</p>`;
         coins += 30;
-        answer = generateAnswer(); // 新しい答えを生成
+        answer = generateAnswer();
       }
 
       document.getElementById("coins").textContent = coins;
