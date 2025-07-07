@@ -134,7 +134,7 @@
     <button onclick="showSection('donate')">寄付</button>
   </div>
   <button id="bgmToggle" onclick="toggleBGM()">BGM オン/オフ</button>
-  <audio id="bgm" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_14f8f6a3d8.mp3?filename=battle-theme-a-9616.mp3" loop></audio>
+  <audio id="bgm" src="https://dl.sndup.net/xz6z/hitblow_bgm.mp3" loop></audio>
 
   <h1>Hit & Blow</h1>
   <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
@@ -222,7 +222,7 @@
 
     const bgm = document.getElementById("bgm");
     bgm.volume = 0.3;
-    bgm.play().catch(() => {});
+    bgm.play().catch(err => console.log("BGM 自動再生ブロック:", err));
   }
 
   function toggleBGM() {
