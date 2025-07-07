@@ -1,3 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hit & Blow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #0e0e0e;
+      background-image: radial-gradient(#444 2px, transparent 1px);
+      background-size: 30px 30px;
+      color: #e0e0e0;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 80px;
+      color: #FFD700;
+      font-size: 2em;
+    }
+    .menu-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 30px;
+      color: #FFD700;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    .menu-list {
+      display: none;
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: #111;
+      border: 1px solid #FFD700;
+      border-radius: 10px;
+      padding: 10px;
+      z-index: 999;
+    }
+    .menu-list button {
+      display: block;
+      width: 150px;
+      background: transparent;
+      border: none;
+      color: #FFD700;
+      text-align: left;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button, input {
+      font-size: 18px;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 2px solid #FFD700;
+      background: transparent;
+      color: #FFD700;
+    }
+    button:hover {
+      background: #FFD700;
+      color: #111;
+    }
+    input {
+      width: 160px;
+      text-align: center;
+      font-size: 22px;
+      letter-spacing: 5px;
+    }
+    #startBtn {
+      margin-top: 30px;
+      position: relative;
+      z-index: 10;
+    }
+    #gameUI {
+      display: none;
+    }
+    #log {
+      margin: 20px auto;
+      max-width: 300px;
+      background: #1a1a1a;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #444;
+    }
+    .correct {
+      color: #8fce00;
+      font-weight: bold;
+    }
+    .section {
+      display: none;
+      padding: 20px;
+      margin-top: 20px;
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 10px;
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="menu-button" onclick="toggleMenu()">☰</div>
+  <div class="menu-list" id="menuList">
+    <button onclick="showSection('game')">ゲーム</button>
+    <button onclick="showSection('rules')">ルール</button>
+    <button onclick="showSection('record')">記録</button>
+    <button onclick="showSection('about')">自己紹介</button>
+    <button onclick="showSection('donate')">寄付</button>
+  </div>
+
+  <h1>Hit & Blow</h1>
+  <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
+  <button id="startBtn" onclick="startGame()">はじめる</button>
+
+  <div id="gameUI">
+    <p style="margin-top: 20px; font-size: 16px; color: #ccc;">予想したい3ケタの数字を入力してね</p>
+    <input id="guess" maxlength="3" placeholder="例:123" />
+    <br />
+    <button onclick="playGame()">プレイ</button>
+    <button onclick="restartGame()">再プレイ</button>
+    <div id="log"></div>
+  </div>
+
 <script>
   let answer = [];
   let turn = 0;
@@ -18,7 +146,8 @@
 
   function showSection(id) {
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
-    document.getElementById("section-" + id).style.display = "block";
+    const section = document.getElementById("section-" + id);
+    if (section) section.style.display = "block";
     document.getElementById("gameUI").style.display = "none";
     document.getElementById("startBtn").style.display = "block";
     document.getElementById("description").style.display = "block";
@@ -27,7 +156,7 @@
   }
 
   function startGame() {
-    answer = generateAnswer(); // ★バグ修正ポイント！
+    answer = generateAnswer();
     turn = 0;
     document.getElementById("gameUI").style.display = "block";
     document.getElementById("startBtn").style.display = "none";
@@ -38,13 +167,13 @@
 
   function playGame() {
     const input = document.getElementById("guess").value;
-    if (!/^\d{3}$/.test(input)) {
-      alert("3ケタの数字を入れてね！");
+    if (!/^[0-9]{3}$/.test(input)) {
+      alert("3ケタの数字を入力してね！");
       return;
     }
 
     turn++;
-    const guess = input.split("").map(Number);
+    const guess = input.split('').map(Number);
     let hit = 0, blow = 0;
 
     for (let i = 0; i < 3; i++) {
@@ -59,7 +188,7 @@
     log.innerHTML += `<p>予想: ${input} → ${hit} Hit / ${blow} Blow</p>`;
 
     if (hit === 3) {
-      log.innerHTML += `<p class="correct">🎉 正解！</p>`;
+      log.innerHTML += `<p class="correct">🎉 正解！新しい数字を用意したよ！</p>`;
       answer = generateAnswer();
       turn = 0;
     }
@@ -74,3 +203,5 @@
     document.getElementById("guess").value = '';
   }
 </script>
+</body>
+</html>
