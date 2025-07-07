@@ -5,172 +5,22 @@
   <title>Hit & Blow Gamble</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Georgia', serif;
-      color: #e0e0e0;
-      background-color: #0e0e0e;
-      background-image: radial-gradient(#444 2px, transparent 1px);
-      background-size: 30px 30px;
-      text-align: center;
-    }
-    h1 {
-      color: #FFD700;
-      font-size: 2em;
-      margin-top: 60px;
-      text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
-    }
-    /* ハンバーガーメニュー */
-    .menu-button {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      font-size: 30px;
-      color: #FFD700;
-      cursor: pointer;
-      z-index: 1000;
-    }
-    .menu-list {
-      display: none;
-      position: fixed;
-      top: 60px;
-      right: 20px;
-      background: #111;
-      border: 1px solid #FFD700;
-      border-radius: 10px;
-      padding: 10px;
-      z-index: 999;
-    }
-    .menu-list button {
-      display: block;
-      width: 150px;
-      background: transparent;
-      border: none;
-      color: #FFD700;
-      text-align: left;
-      padding: 10px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .menu-list button:hover {
-      background-color: #FFD70022;
-    }
-    #description {
-      margin: 20px;
-      font-size: 16px;
-      color: #ccc;
-    }
-    #startBtn {
-      margin: 10px auto 30px;
-      padding: 14px 40px;
-      font-size: 18px;
-      background: transparent;
-      color: #FFD700;
-      border: 2px solid #FFD700;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    #startBtn:hover {
-      background: #FFD700;
-      color: #111;
-      box-shadow: 0 0 10px #FFD70066;
-    }
-    #gameUI {
-      display: none;
-      margin-top: 20px;
-    }
-    input {
-      padding: 10px;
-      font-size: 20px;
-      width: 100px;
-      max-width: 50vw;
-      text-align: center;
-      background: #111;
-      color: #FFD700;
-      border: 2px solid #FFD700;
-      border-radius: 8px;
-    }
-    button {
-      padding: 10px 25px;
-      font-size: 16px;
-      background: transparent;
-      color: #FFD700;
-      border: 2px solid #FFD700;
-      border-radius: 8px;
-      margin: 10px 5px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    button:hover {
-      background-color: #FFD700;
-      color: #111;
-      box-shadow: 0 0 10px #FFD70055;
-    }
-    #log {
-      margin-top: 20px;
-      font-size: 18px;
-      max-width: 90%;
-      margin-left: auto;
-      margin-right: auto;
-      background: #1a1a1a;
-      padding: 15px;
-      border: 1px solid #444;
-      border-radius: 10px;
-      min-height: 120px;
-      overflow-y: auto;
-      text-align: center;
-    }
-    #log p {
-      margin: 8px 0;
-    }
-    #log p.correct {
-      color: #8fce00;
-      font-weight: bold;
-      text-shadow: 0 0 5px #8fce0080;
-    }
-    .section {
-      display: none;
-      margin: 40px auto;
-      max-width: 90%;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      padding: 20px;
-      border-radius: 10px;
-    }
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.8em;
-      }
-      input {
-        width: 80px;
-        font-size: 18px;
-      }
-      button {
-        font-size: 15px;
-        padding: 10px 20px;
-      }
-    }
+    /* ...（省略）...スタイルは前回と同じ */
   </style>
 </head>
 <body>
 
   <!-- 効果音 -->
   <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
-  <audio id="failSound" src="fail.mp3" preload="auto"></audio>
   <audio id="clickSound" src="click.mp3" preload="auto"></audio>
 
   <!-- メニュー -->
-  <div class="menu-button" onclick="toggleMenu()">☰</div>
+  <div class="menu-button" onclick="playClickSound(); toggleMenu()">☰</div>
   <div class="menu-list" id="menuList">
-    <button onclick="showSection('game')">ゲーム</button>
-    <button onclick="showSection('rules')">ルール</button>
-    <button onclick="showSection('about')">自己紹介</button>
-    <button onclick="showSection('donate')">寄付</button>
+    <button onclick="playClickSound(); showSection('game')">ゲーム</button>
+    <button onclick="playClickSound(); showSection('rules')">ルール</button>
+    <button onclick="playClickSound(); showSection('about')">自己紹介</button>
+    <button onclick="playClickSound(); showSection('donate')">寄付</button>
   </div>
 
   <h1>Hit & Blow Gamble</h1>
@@ -206,101 +56,94 @@
     <p>応援してくれる方はぜひ寄付してね！（今後導入予定）</p>
   </div>
 
-  <script>
-    // 効果音オブジェクト
-    const correctSound = document.getElementById("correctSound");
-    const failSound = document.getElementById("failSound");
-    const clickSound = document.getElementById("clickSound");
+<script>
+  const correctSound = document.getElementById("correctSound");
+  const clickSound = document.getElementById("clickSound");
 
-    let answer = [];
+  let answer = [];
 
-    function playClickSound() {
-      clickSound.currentTime = 0;
-      clickSound.play();
+  function playClickSound() {
+    clickSound.currentTime = 0;
+    clickSound.play();
+  }
+
+  function toggleMenu() {
+    const menu = document.getElementById("menuList");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+  }
+
+  function showSection(id) {
+    document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+    document.getElementById("section-" + id).style.display = "block";
+
+    document.getElementById("gameUI").style.display = "none";
+    document.getElementById("startBtn").style.display = "block";
+    document.getElementById("description").style.display = "block";
+
+    toggleMenu();
+  }
+
+  function generateAnswer() {
+    const digits = [];
+    while (digits.length < 3) {
+      const rand = Math.floor(Math.random() * 10);
+      if (!digits.includes(rand)) digits.push(rand);
+    }
+    return digits;
+  }
+
+  function startGame() {
+    answer = generateAnswer();
+    document.getElementById("gameUI").style.display = "block";
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("description").style.display = "none";
+    document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+    clearLog();
+  }
+
+  function playGame() {
+    const input = document.getElementById('guess').value;
+    if (!/^\d{3}$/.test(input)) {
+      alert('3桁の数字を入力してください');
+      return;
     }
 
-    function toggleMenu() {
-      const menu = document.getElementById("menuList");
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
-    }
+    const guess = input.split('').map(Number);
+    let hit = 0, blow = 0;
 
-    function showSection(id) {
-      document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
-      document.getElementById("section-" + id).style.display = "block";
-
-      document.getElementById("gameUI").style.display = "none";
-      document.getElementById("startBtn").style.display = "block";
-      document.getElementById("description").style.display = "block";
-
-      toggleMenu();
-    }
-
-    function generateAnswer() {
-      const digits = [];
-      while (digits.length < 3) {
-        const rand = Math.floor(Math.random() * 10);
-        if (!digits.includes(rand)) digits.push(rand);
+    for (let i = 0; i < 3; i++) {
+      if (guess[i] === answer[i]) {
+        hit++;
+      } else if (answer.includes(guess[i])) {
+        blow++;
       }
-      return digits;
     }
 
-    function startGame() {
+    const log = document.getElementById('log');
+    log.innerHTML += `<p>予想: ${input} → 結果: ${hit} Hit / ${blow} Blow</p>`;
+    log.scrollTop = log.scrollHeight;
+
+    if (hit === 3) {
+      correctSound.currentTime = 0;
+      correctSound.play();
+      log.innerHTML += `<p class="correct">🎉 正解！次の問題へ！</p>`;
       answer = generateAnswer();
-      document.getElementById("gameUI").style.display = "block";
-      document.getElementById("startBtn").style.display = "none";
-      document.getElementById("description").style.display = "none";
-      document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
-      clearLog();
     }
 
-    function playGame() {
-      const input = document.getElementById('guess').value;
-      if (!/^\d{3}$/.test(input)) {
-        alert('3桁の数字を入力してください');
-        failSound.currentTime = 0;
-        failSound.play();
-        return;
-      }
+    document.getElementById('guess').value = '';
+    document.getElementById('guess').focus();
+  }
 
-      const guess = input.split('').map(Number);
-      let hit = 0, blow = 0;
+  function restartGame() {
+    clearLog();
+    answer = generateAnswer();
+    document.getElementById('guess').value = '';
+    document.getElementById('guess').focus();
+  }
 
-      for (let i = 0; i < 3; i++) {
-        if (guess[i] === answer[i]) {
-          hit++;
-        } else if (answer.includes(guess[i])) {
-          blow++;
-        }
-      }
-
-      const log = document.getElementById('log');
-      log.innerHTML += `<p>予想: ${input} → 結果: ${hit} Hit / ${blow} Blow</p>`;
-      log.scrollTop = log.scrollHeight;
-
-      if (hit === 3) {
-        correctSound.currentTime = 0;
-        correctSound.play();
-        log.innerHTML += `<p class="correct">🎉 正解！次の問題へ！</p>`;
-        answer = generateAnswer();
-      } else {
-        failSound.currentTime = 0;
-        failSound.play();
-      }
-
-      document.getElementById('guess').value = '';
-      document.getElementById('guess').focus();
-    }
-
-    function restartGame() {
-      clearLog();
-      answer = generateAnswer();
-      document.getElementById('guess').value = '';
-      document.getElementById('guess').focus();
-    }
-
-    function clearLog() {
-      document.getElementById('log').innerHTML = '';
-    }
-  </script>
+  function clearLog() {
+    document.getElementById('log').innerHTML = '';
+  }
+</script>
 </body>
 </html>
