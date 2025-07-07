@@ -2,55 +2,103 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>IPと位置情報の確認</title>
+  <title>Hit & Blow Gamble</title>
   <style>
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to bottom right, #e0eafc, #cfdef3);
-    padding: 2rem;
-    color: #333;
-    margin: 0;
-  }
-  h1 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-    color: #2c3e50;
-  }
-  .info {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    line-height: 1.6;
-    max-width: 500px;
-    margin: auto;
-  }
-</style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      padding: 30px;
+    }
 
+    h1 {
+      color: gold;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 16px;
+      width: 80px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 15px;
+      background-color: gold;
+      border: none;
+      cursor: pointer;
+    }
+
+    #log {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-  <h1>あなたのアクセス情報</h1>
-  <div class="info" id="result">取得中...</div>
+
+  <h1>💰Hit & Blow Gamble💰</h1>
+  <p>所持コイン: <span id="coins">100</span></p>
+
+  <input id="guess" maxlength="3" placeholder="例:123">
+  <br>
+  <button onclick="playGame()">プレイ (10コイン)</button>
+
+  <div id="log"></div>
 
   <script>
-    fetch('https://ipapi.co/json/')
-      .then(response => response.json())
-      .then(data => {
-        const result = `
-          <strong>IP:</strong> ${data.ip} <br>
-          <strong>国:</strong> ${data.country_name} (${data.country_code})<br>
-          <strong>地域:</strong> ${data.region}<br>
-          <strong>市区町村:</strong> ${data.city}<br>
-          <strong>郵便番号:</strong> ${data.postal}<br>
-          <strong>プロバイダ:</strong> ${data.org}<br>
-          <strong>時刻:</strong> ${new Date().toLocaleString()}
-        `;
-        document.getElementById('result').innerHTML = result;
-      })
-      .catch(error => {
-        document.getElementById('result').innerText = '情報の取得に失敗しました。';
-        console.error('エラー:', error);
-      });
+    let coins = 100;
+    let answer = generateAnswer();
+
+    function generateAnswer() {
+      const digits = [];
+      while (digits.length < 3) {
+        const rand = Math.floor(Math.random() * 10);
+        if (!digits.includes(rand)) digits.push(rand);
+      }
+      return digits;
+    }
+
+    function playGame() {
+      if (coins < 10) {
+        alert("コインが足りません！");
+        return;
+      }
+
+      const input = document.getElementById("guess").value;
+      if (!/^\d{3}$/.test(input)) {
+        alert("3桁の数字を入力してください");
+        return;
+      }
+
+      coins -= 10;
+      const guess = input.split('').map(Number);
+      let hit = 0, blow = 0;
+
+      for (let i = 0; i < 3; i++) {
+        if (guess[i] === answer[i]) {
+          hit++;
+        } else if (answer.includes(guess[i])) {
+          blow++;
+        }
+      }
+
+      const result = `結果: ${hit} Hit / ${blow} Blow`;
+      document.getElementById("log").innerHTML += `<p>予想: ${input} → ${result}</p>`;
+
+      if (hit === 3) {
+        document.getElementById("log").innerHTML += `<p style="color:lime;">正解！20コイン獲得！</p>`;
+        coins += 20;
+        answer = generateAnswer(); // 次の問題に進む
+      }
+
+      document.getElementById("coins").textContent = coins;
+    }
   </script>
+
 </body>
 </html>
