@@ -112,6 +112,7 @@
   <div class="section" id="section-record">
     <div id="userInfo" style="margin: 10px; color: #FFD700;"></div>
     <button onclick="loginWithGoogle()">Googleでログイン</button>
+    <div id="userStats"></div>
     <div id="ranking">読み込み中...</div>
   </div>
 
@@ -122,6 +123,9 @@
   <div class="section" id="section-donate">
     <p>寄付方法は準備中だよ！</p>
   </div>
+
+<audio id="correctSound" src="correct.mp3"></audio>
+<audio id="clickSound" src="click.mp3"></audio>
 
 <script>
   const firebaseConfig = {
@@ -140,6 +144,7 @@
   auth.onAuthStateChanged(user => {
     if (user) {
       document.getElementById("userInfo").innerText = user.isAnonymous ? "ゲストプレイ中" : "ログイン済み";
+      loadUserStats();
     } else {
       auth.signInAnonymously().catch(console.error);
     }
@@ -151,6 +156,7 @@
   }
 
   function toggleMenu() {
+    document.getElementById("clickSound").play();
     const menu = document.getElementById("menuList");
     menu.style.display = menu.style.display === "block" ? "none" : "block";
   }
@@ -158,10 +164,14 @@
   function showSection(id) {
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
     document.getElementById("section-" + id).style.display = "block";
-    if (id === "record") loadRanking();
+    if (id === "record") {
+      loadRanking();
+      loadUserStats();
+    }
   }
 
   function startGame() {
+    document.getElementById("clickSound").play();
     document.getElementById("gameUI").style.display = "block";
     document.getElementById("startBtn").style.display = "none";
     document.getElementById("description").style.display = "none";
@@ -200,12 +210,14 @@
     log.innerHTML += `<div>${result}</div>`;
     turn++;
     if (hit === 3) {
+      document.getElementById("correctSound").play();
       log.innerHTML += `<div style='color:lime;'>正解！${turn}ターンでクリア！</div>`;
       savePlayerData(turn <= 4 ? 'fastwin' : 'win');
     }
   }
 
   function restartGame() {
+    document.getElementById("clickSound").play();
     answer = generateAnswer();
     turn = 0;
     document.getElementById("log").innerHTML = "";
@@ -248,6 +260,22 @@
         html += "</ol>";
         document.getElementById("ranking").innerHTML = html;
       });
+  }
+
+  function loadUserStats() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    db.collection("players").doc(user.uid).get().then(doc => {
+      if (doc.exists) {
+        const p = doc.data();
+        document.getElementById("userStats").innerHTML = `
+          <p>あなたの記録</p>
+          <p>プレイ数: ${p.playCount}</p>
+          <p>勝利数: ${p.winCount}</p>
+          <p>4ターン以内勝利: ${p.fastWinCount}</p>
+        `;
+      }
+    });
   }
 </script>
 </body>
