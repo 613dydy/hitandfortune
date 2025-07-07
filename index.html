@@ -2,33 +2,24 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Hit & Blow Gamble</title>
+  <title>Hit & Blow</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Georgia', serif;
-      color: #e0e0e0;
+      font-family: 'Arial', sans-serif;
       background-color: #0e0e0e;
       background-image: radial-gradient(#444 2px, transparent 1px);
       background-size: 30px 30px;
+      color: #e0e0e0;
       text-align: center;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
     h1 {
+      margin-top: 60px;
       color: #FFD700;
       font-size: 2em;
-      margin-top: 60px;
-      text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
     }
-    /* メニュー */
     .menu-button {
       position: fixed;
       top: 20px;
@@ -37,7 +28,6 @@
       color: #FFD700;
       cursor: pointer;
       z-index: 1000;
-      user-select: none;
     }
     .menu-list {
       display: none;
@@ -60,160 +50,99 @@
       padding: 10px;
       font-size: 16px;
       cursor: pointer;
-      user-select: none;
     }
-    .menu-list button:hover {
-      background-color: #FFD70022;
-    }
-    #description {
-      margin: 20px;
-      font-size: 16px;
-      color: #ccc;
-      max-width: 90vw;
-    }
-    #startBtn {
-      margin: 10px auto 30px;
-      padding: 14px 40px;
+    button, input {
       font-size: 18px;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 2px solid #FFD700;
       background: transparent;
       color: #FFD700;
-      border: 2px solid #FFD700;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      user-select: none;
     }
-    #startBtn:hover {
+    button:hover {
       background: #FFD700;
       color: #111;
-      box-shadow: 0 0 10px #FFD70066;
+    }
+    input {
+      width: 120px;
+      text-align: center;
     }
     #gameUI {
       display: none;
-      margin-top: 20px;
-      max-width: 90vw;
-      width: 320px;
-    }
-    input {
-      padding: 10px;
-      font-size: 20px;
-      width: 100%;
-      text-align: center;
-      background: #111;
-      color: #FFD700;
-      border: 2px solid #FFD700;
-      border-radius: 8px;
-      user-select: text;
-    }
-    button {
-      padding: 10px 25px;
-      font-size: 16px;
-      background: transparent;
-      color: #FFD700;
-      border: 2px solid #FFD700;
-      border-radius: 8px;
-      margin: 10px 5px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      user-select: none;
-    }
-    button:hover {
-      background-color: #FFD700;
-      color: #111;
-      box-shadow: 0 0 10px #FFD70055;
     }
     #log {
-      margin-top: 20px;
-      font-size: 18px;
+      margin: 20px auto;
+      max-width: 300px;
       background: #1a1a1a;
-      padding: 15px;
-      border: 1px solid #444;
+      padding: 10px;
       border-radius: 10px;
-      min-height: 120px;
-      overflow-y: auto;
-      text-align: center;
-      max-width: 100%;
-      word-break: break-word;
+      border: 1px solid #444;
     }
-    #log p {
-      margin: 8px 0;
-    }
-    #log p.correct {
+    .correct {
       color: #8fce00;
       font-weight: bold;
-      text-shadow: 0 0 5px #8fce0080;
     }
     .section {
       display: none;
-      margin: 40px auto;
-      max-width: 90vw;
-      background: #1a1a1a;
-      border: 1px solid #333;
       padding: 20px;
+      margin-top: 20px;
+      background: #1a1a1a;
+      border: 1px solid #444;
       border-radius: 10px;
-      text-align: left;
-      color: #ccc;
-      font-size: 16px;
-    }
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.8em;
-      }
-      input {
-        font-size: 18px;
-      }
-      button {
-        font-size: 15px;
-        padding: 10px 20px;
-      }
-      .menu-list {
-        width: 160px;
-      }
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
 <body>
 
-  <!-- 効果音 -->
   <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
   <audio id="clickSound" src="click.mp3" preload="auto"></audio>
 
-  <!-- メニュー -->
   <div class="menu-button" onclick="playClickSound(); toggleMenu()">☰</div>
   <div class="menu-list" id="menuList">
     <button onclick="playClickSound(); showSection('game')">ゲーム</button>
     <button onclick="playClickSound(); showSection('rules')">ルール</button>
+    <button onclick="playClickSound(); showSection('record')">記録</button>
     <button onclick="playClickSound(); showSection('about')">自己紹介</button>
     <button onclick="playClickSound(); showSection('donate')">寄付</button>
   </div>
 
-  <h1>Hit & Blow Gamble</h1>
-
-  <div id="description">記憶力が試される、シンプルで中毒性のあるゲームです。</div>
-
+  <h1>Hit & Blow</h1>
+  <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
   <button id="startBtn" onclick="playClickSound(); startGame()">はじめる</button>
 
   <div id="gameUI">
-    <input id="guess" maxlength="3" placeholder="例:123" autocomplete="off" />
+    <input id="guess" maxlength="3" placeholder="例:123" />
     <br />
     <button onclick="playClickSound(); playGame()">プレイ</button>
     <button onclick="playClickSound(); restartGame()">再プレイ</button>
     <div id="log"></div>
   </div>
 
+  <!-- 各セクション -->
   <div class="section" id="section-rules">
-    <h2>📜 ルール</h2>
-    <p>3桁の数字を入力してください。数字と位置が合っていれば「Hit」、位置が違えば「Blow」。3Hitで正解！</p>
+    <h2>ルール</h2>
+    <p>3ケタの数字を入れて当ててみて！数字も位置も合ってたら「Hit」、数字だけ合ってたら「Blow」だよ。3Hitで正解！</p>
+  </div>
+
+  <div class="section" id="section-record">
+    <h2>君の記録</h2>
+    <p id="playCount">プレイ回数: 0</p>
+    <p id="clearCount">クリア回数: 0</p>
+    <p id="fastClearCount">4ターン以内クリア回数: 0</p>
   </div>
 
   <div class="section" id="section-about">
-    <h2>👤 自己紹介</h2>
+    <h2>自己紹介</h2>
     <p>暇人です。お金ないです。寄付まってます💛</p>
   </div>
 
   <div class="section" id="section-donate">
-    <h2>💰 寄付</h2>
-    <p>応援してくれる方はぜひ寄付してね！（今後導入予定）</p>
+    <h2>寄付</h2>
+    <p>そのうちPayPayとかで寄付できるようにするかも〜</p>
   </div>
 
 <script>
@@ -221,6 +150,19 @@
   const clickSound = document.getElementById("clickSound");
 
   let answer = [];
+  let turn = 0;
+
+  const stats = {
+    playCount: parseInt(localStorage.getItem('playCount') || '0'),
+    clearCount: parseInt(localStorage.getItem('clearCount') || '0'),
+    fastClearCount: parseInt(localStorage.getItem('fastClearCount') || '0')
+  };
+
+  function updateStatsDisplay() {
+    document.getElementById('playCount').textContent = "プレイ回数: " + stats.playCount;
+    document.getElementById('clearCount').textContent = "クリア回数: " + stats.clearCount;
+    document.getElementById('fastClearCount').textContent = "4ターン以内クリア回数: " + stats.fastClearCount;
+  }
 
   function playClickSound() {
     clickSound.currentTime = 0;
@@ -235,11 +177,10 @@
   function showSection(id) {
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
     document.getElementById("section-" + id).style.display = "block";
-
     document.getElementById("gameUI").style.display = "none";
     document.getElementById("startBtn").style.display = "block";
     document.getElementById("description").style.display = "block";
-
+    updateStatsDisplay();
     toggleMenu();
   }
 
@@ -254,19 +195,23 @@
 
   function startGame() {
     answer = generateAnswer();
+    turn = 0;
     document.getElementById("gameUI").style.display = "block";
     document.getElementById("startBtn").style.display = "none";
     document.getElementById("description").style.display = "none";
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
-    clearLog();
+    document.getElementById("log").innerHTML = "";
   }
 
   function playGame() {
     const input = document.getElementById('guess').value;
     if (!/^\d{3}$/.test(input)) {
-      alert('3桁の数字を入力してください');
+      alert('3ケタの数字を入れて！');
       return;
     }
+
+    stats.playCount++;
+    turn++;
 
     const guess = input.split('').map(Number);
     let hit = 0, blow = 0;
@@ -280,29 +225,36 @@
     }
 
     const log = document.getElementById('log');
-    log.innerHTML += `<p>予想: ${input} → 結果: ${hit} Hit / ${blow} Blow</p>`;
-    log.scrollTop = log.scrollHeight;
+    log.innerHTML += `<p>予想: ${input} → ${hit} Hit / ${blow} Blow</p>`;
 
     if (hit === 3) {
       correctSound.currentTime = 0;
       correctSound.play();
-      log.innerHTML += `<p class="correct">🎉 正解！次の問題へ！</p>`;
+      log.innerHTML += `<p class="correct">🎉 正解！次いってみよ！</p>`;
+      stats.clearCount++;
+      if (turn <= 4) {
+        stats.fastClearCount++;
+      }
       answer = generateAnswer();
+      turn = 0;
     }
 
+    saveStats();
     document.getElementById('guess').value = '';
-    document.getElementById('guess').focus();
+    updateStatsDisplay();
   }
 
   function restartGame() {
-    clearLog();
     answer = generateAnswer();
+    turn = 0;
+    document.getElementById('log').innerHTML = '';
     document.getElementById('guess').value = '';
-    document.getElementById('guess').focus();
   }
 
-  function clearLog() {
-    document.getElementById('log').innerHTML = '';
+  function saveStats() {
+    localStorage.setItem('playCount', stats.playCount);
+    localStorage.setItem('clearCount', stats.clearCount);
+    localStorage.setItem('fastClearCount', stats.fastClearCount);
   }
 </script>
 </body>
