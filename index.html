@@ -28,6 +28,7 @@
       padding: 10px 20px;
       font-size: 16px;
       margin-top: 15px;
+      margin: 5px;
       background-color: gold;
       border: none;
       cursor: pointer;
@@ -47,6 +48,7 @@
   <input id="guess" maxlength="3" placeholder="例:123">
   <br>
   <button onclick="playGame()">プレイ (10コイン)</button>
+  <button onclick="clearLog()">履歴を消す</button>
 
   <div id="log"></div>
 
@@ -91,12 +93,16 @@
       document.getElementById("log").innerHTML += `<p>予想: ${input} → ${result}</p>`;
 
       if (hit === 3) {
-        document.getElementById("log").innerHTML += `<p style="color:lime;">正解！20コイン獲得！</p>`;
-        coins += 20;
-        answer = generateAnswer(); // 次の問題に進む
+        document.getElementById("log").innerHTML += `<p style="color:lime;">🎉 正解！30コイン獲得！</p>`;
+        coins += 30;
+        answer = generateAnswer(); // 新しい答えを生成
       }
 
       document.getElementById("coins").textContent = coins;
+    }
+
+    function clearLog() {
+      document.getElementById("log").innerHTML = '';
     }
   </script>
 
