@@ -85,6 +85,7 @@
       padding: 10px;
       border-radius: 10px;
       border: 1px solid #444;
+      text-align: center;
     }
     .correct {
       color: #8fce00;
@@ -100,6 +101,7 @@
       max-width: 90%;
       margin-left: auto;
       margin-right: auto;
+      text-align: left;
     }
   </style>
 </head>
@@ -132,7 +134,9 @@
   </div>
   <div id="section-record" class="section">
     <h2>記録</h2>
-    <p>まだ準備中だけど、将来的に自分の戦績とかも見れるようにするつもりだよ！</p>
+    <div id="recordContent">
+      <p>まだ記録がないよ！ゲームをプレイしてね。</p>
+    </div>
   </div>
   <div id="section-about" class="section">
     <h2>自己紹介</h2>
@@ -146,6 +150,11 @@
 <script>
   let answer = [];
   let turn = 0;
+  let record = {
+    playCount: 0,
+    clearCount: 0,
+    fastClearCount: 0,
+  };
 
   function generateAnswer() {
     const digits = [];
@@ -169,9 +178,15 @@
     document.getElementById("startBtn").style.display = "block";
     document.getElementById("description").style.display = "block";
     document.getElementById("startBtn").style.marginTop = "60px";
+    // メニュー閉じる
+    document.getElementById("menuList").style.display = "none";
   }
 
   function startGame() {
+    record = loadRecord();
+    record.playCount++;
+    saveRecord(record);
+
     answer = generateAnswer();
     turn = 0;
     document.getElementById("gameUI").style.display = "block";
@@ -179,11 +194,13 @@
     document.getElementById("description").style.display = "none";
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
     document.getElementById("log").innerHTML = "";
+    // メニュー閉じる
+    document.getElementById("menuList").style.display = "none";
   }
 
   function playGame() {
     const input = document.getElementById("guess").value;
-    if (!/^(?!.*(.).*\1)\d{3}$/.test(input)) {
+    if (!/^(?!.*(.).*\\1)\\d{3}$/.test(input)) {
       alert("3ケタの異なる数字を入れてね！");
       return;
     }
@@ -205,19 +222,52 @@
 
     if (hit === 3) {
       log.innerHTML += `<p class="correct">🎉 正解！新しい数字を用意したよ！</p>`;
+      record.clearCount++;
+      if (turn <= 4) record.fastClearCount++;
+      saveRecord(record);
       answer = generateAnswer();
       turn = 0;
     }
 
-    document.getElementById("guess").value = '';
+    document.getElementById("guess").value = "";
   }
 
   function restartGame() {
     answer = generateAnswer();
     turn = 0;
-    document.getElementById("log").innerHTML = '';
-    document.getElementById("guess").value = '';
+    document.getElementById("log").innerHTML = "";
+    document.getElementById("guess").value = "";
   }
+
+  function loadRecord() {
+    const stored = localStorage.getItem("hitblowRecord");
+    return stored ? JSON.parse(stored) : {
+      playCount: 0,
+      clearCount: 0,
+      fastClearCount: 0,
+    };
+  }
+
+  function saveRecord(rec) {
+    localStorage.setItem("hitblowRecord", JSON.stringify(rec));
+  }
+
+  function showRecord() {
+    record = loadRecord();
+    const recDiv = document.getElementById("recordContent");
+    if (record.playCount === 0) {
+      recDiv.innerHTML = "<p>まだ記録がないよ！ゲームをプレイしてね。</p>";
+    } else {
+      recDiv.innerHTML = `
+        <p>プレイ回数: ${record.playCount}</p>
+        <p>合計クリア回数: ${record.clearCount}</p>
+        <p>4ターン以内クリア回数: ${record.fastClearCount}</p>
+      `;
+    }
+  }
+
+  // 記録画面を開いたら最新の記録を表示
+  document.querySelector('button[onclick="showSection(\'record\')"]').addEventListener("click", showRecord);
 </script>
 </body>
 </html>
