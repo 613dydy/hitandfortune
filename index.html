@@ -2,23 +2,38 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hit & Blow</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #0e0e0e;
+      background: #0e0e0e;
       background-image: radial-gradient(#444 2px, transparent 1px);
       background-size: 30px 30px;
+      font-family: 'Arial', sans-serif;
       color: #e0e0e0;
       text-align: center;
+      margin: 0;
     }
     h1 {
       margin-top: 80px;
       color: #FFD700;
-      font-size: 2em;
+    }
+    button, input {
+      font-size: 18px;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 5px;
+      border: 2px solid #FFD700;
+      background: transparent;
+      color: #FFD700;
+    }
+    input {
+      width: 160px;
+      text-align: center;
+      letter-spacing: 5px;
     }
     .menu-button {
       position: fixed;
@@ -51,47 +66,6 @@
       font-size: 16px;
       cursor: pointer;
     }
-    button, input {
-      font-size: 18px;
-      padding: 10px;
-      margin: 5px auto;
-      border-radius: 5px;
-      border: 2px solid #FFD700;
-      background: transparent;
-      color: #FFD700;
-      display: block;
-    }
-    button:hover {
-      background: #FFD700;
-      color: #111;
-    }
-    input {
-      width: 160px;
-      text-align: center;
-      font-size: 22px;
-      letter-spacing: 5px;
-      margin: 10px auto;
-    }
-    #startBtn {
-      margin-top: 60px;
-      position: relative;
-      z-index: 10;
-    }
-    #gameUI {
-      display: none;
-    }
-    #log {
-      margin: 20px auto;
-      max-width: 300px;
-      background: #1a1a1a;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid #444;
-    }
-    .correct {
-      color: #8fce00;
-      font-weight: bold;
-    }
     .section {
       display: none;
       padding: 20px;
@@ -102,93 +76,78 @@
       max-width: 90%;
       margin-left: auto;
       margin-right: auto;
-      text-align: center;
     }
-    #bgmToggle {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: #111;
-      border: 2px solid #FFD700;
-      border-radius: 5px;
-      padding: 10px;
-      color: #FFD700;
-      font-size: 14px;
-      cursor: pointer;
-      z-index: 1000;
+    #gameUI {
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="menu-button" onclick="toggleMenu()">☰</div>
   <div class="menu-list" id="menuList">
-    <button onclick="playClick(); showSection('game')">ゲーム</button>
-    <button onclick="playClick(); showSection('rules')">ルール</button>
-    <button onclick="playClick(); showSection('record')">記録</button>
-    <button onclick="playClick(); showSection('about')">自己紹介</button>
-    <button onclick="playClick(); showSection('donate')">寄付</button>
+    <button onclick="showSection('game')">ゲーム</button>
+    <button onclick="showSection('rules')">ルール</button>
+    <button onclick="showSection('record')">記録</button>
+    <button onclick="showSection('about')">自己紹介</button>
+    <button onclick="showSection('donate')">寄付</button>
   </div>
-  <button id="bgmToggle" onclick="toggleBGM()">BGM オン/オフ</button>
-
-  <audio id="bgm" src="./bgm.mp3" loop preload="auto"></audio>
-  <audio id="se-correct" src="./correct.mp3" preload="auto"></audio>
-  <audio id="se-click" src="./click.mp3" preload="auto"></audio>
 
   <h1>Hit & Blow</h1>
   <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
-  <button id="startBtn" onclick="playClick(); startGame()">はじめる</button>
+  <button id="startBtn" onclick="startGame()">はじめる</button>
+  <div id="userInfo" style="margin: 10px; color: #FFD700;"></div>
+  <button onclick="loginWithGoogle()">Googleでログイン</button>
 
   <div id="gameUI">
-    <p style="margin-top: 20px; font-size: 16px; color: #ccc;">予想したい3ケタの数字を入力してね</p>
+    <p>3ケタの数字を入力してね</p>
     <input id="guess" maxlength="3" placeholder="例:123" />
     <br />
-    <button onclick="playClick(); playGame()">プレイ</button>
-    <button onclick="playClick(); restartGame()">再プレイ</button>
+    <button onclick="playGame()">プレイ</button>
+    <button onclick="restartGame()">再プレイ</button>
     <div id="log"></div>
   </div>
 
-  <div id="section-game" class="section">
-    <h2>ゲーム</h2>
-    <p>この画面でゲームをプレイできるよ！</p>
+  <div class="section" id="section-rules">
+    <p>Hit: 数字も位置も一致 / Blow: 数字のみ一致</p>
   </div>
-  <div id="section-rules" class="section">
-    <h2>ルール</h2>
-    <p>3桁の異なる数字を当てるゲームだよ。Hitは位置も数字も合ってる、Blowは数字だけ合ってる！</p>
+
+  <div class="section" id="section-record">
+    <div id="ranking">読み込み中...</div>
   </div>
-  <div id="section-record" class="section">
-    <h2>記録</h2>
-    <p id="recordContent">プレイ回数: <span id="playCount">0</span><br>クリア回数: <span id="clearCount">0</span><br>4ターン以内のクリア: <span id="fastClearCount">0</span></p>
-    <h3>ランキング（準備中）</h3>
-  </div>
-  <div id="section-about" class="section">
-    <h2>自己紹介</h2>
+
+  <div class="section" id="section-about">
     <p>暇人です。お金ないです。寄付まってます💛</p>
   </div>
-  <div id="section-donate" class="section">
-    <h2>寄付</h2>
-    <p>将来的に寄付方法を載せる予定だよ。PayPayとか使えるようにしたいね！</p>
+
+  <div class="section" id="section-donate">
+    <p>寄付方法は準備中だよ！</p>
   </div>
 
 <script>
-  const bgm = document.getElementById("bgm");
-  const seCorrect = document.getElementById("se-correct");
-  const seClick = document.getElementById("se-click");
+  const firebaseConfig = {
+    apiKey: "AIzaSyCCGEF45sV1nHAqxfrqq80ir3z-ZCbfDho",
+    authDomain: "hitblow-game.firebaseapp.com",
+    projectId: "hitblow-game",
+    storageBucket: "hitblow-game.firebasestorage.app",
+    messagingSenderId: "871466550729",
+    appId: "1:871466550729:web:65c91cc117c7bf61a8d418",
+    measurementId: "G-G08BDBRE2N"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-  let playCount = 0;
-  let clearCount = 0;
-  let fastClearCount = 0;
-  let turnCount = 0;
-
-  document.addEventListener("DOMContentLoaded", () => {
-    document.body.addEventListener("click", () => {
-      bgm.volume = 0.3;
-      bgm.play().catch(err => console.log("BGM 自動再生ブロック:", err));
-    }, { once: true });
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById("userInfo").innerText = user.isAnonymous ? "ゲストプレイ中" : "ログイン済み";
+    } else {
+      auth.signInAnonymously().catch(console.error);
+    }
   });
 
-  function playClick() {
-    seClick.currentTime = 0;
-    seClick.play();
+  function loginWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(console.error);
   }
 
   function toggleMenu() {
@@ -196,92 +155,100 @@
     menu.style.display = menu.style.display === "block" ? "none" : "block";
   }
 
-  function toggleBGM() {
-    if (bgm.paused) {
-      bgm.play();
-    } else {
-      bgm.pause();
-    }
-  }
-
   function showSection(id) {
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
     document.getElementById("section-" + id).style.display = "block";
-    document.getElementById("gameUI").style.display = "none";
-    document.getElementById("startBtn").style.display = "block";
-    document.getElementById("description").style.display = "block";
-    document.getElementById("startBtn").style.marginTop = "30px";
-    document.getElementById("startBtn").style.position = "relative";
-    document.getElementById("startBtn").style.marginLeft = "auto";
-    document.getElementById("startBtn").style.marginRight = "auto";
+    if (id === "record") loadRanking();
   }
 
   function startGame() {
     document.getElementById("gameUI").style.display = "block";
     document.getElementById("startBtn").style.display = "none";
     document.getElementById("description").style.display = "none";
-    document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
     document.getElementById("log").innerHTML = "";
-    turnCount = 0;
+    answer = generateAnswer();
+    turn = 0;
   }
 
-  function restartGame() {
-    startGame();
-    secret = generateNumber();
-  }
+  let answer = generateAnswer();
+  let turn = 0;
 
-  function zenkakuToHankaku(str) {
-    return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-  }
-
-  let secret = generateNumber();
-
-  function generateNumber() {
+  function generateAnswer() {
     let digits = [];
     while (digits.length < 3) {
-      let d = Math.floor(Math.random() * 10).toString();
-      if (!digits.includes(d)) digits.push(d);
+      const r = Math.floor(Math.random() * 10);
+      if (!digits.includes(r)) digits.push(r);
     }
-    return digits.join("");
+    return digits;
   }
 
   function playGame() {
-    let guessInput = document.getElementById("guess");
-    let guess = zenkakuToHankaku(guessInput.value);
-    if (!/^[0-9]{3}$/.test(guess)) {
-      alert("3桁の数字を入力してね！");
+    let input = document.getElementById("guess").value.trim();
+    input = input.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 65248));
+    if (!/^[0-9]{3}$/.test(input)) {
+      alert("3ケタの数字を入れてね！");
       return;
     }
-    turnCount++;
-    playCount++;
-    updateRecord();
-
+    const guess = input.split('').map(Number);
     let hit = 0, blow = 0;
     for (let i = 0; i < 3; i++) {
-      if (guess[i] === secret[i]) hit++;
-      else if (secret.includes(guess[i])) blow++;
+      if (guess[i] === answer[i]) hit++;
+      else if (answer.includes(guess[i])) blow++;
     }
-    let result = `予想: ${guess} → 結果: ${hit} Hit / ${blow} Blow`;
-    let log = document.getElementById("log");
-    let p = document.createElement("p");
-    p.innerText = result;
+    const log = document.getElementById("log");
+    const result = `予想: ${input} → ${hit} Hit / ${blow} Blow`;
+    log.innerHTML += `<div>${result}</div>`;
+    turn++;
     if (hit === 3) {
-      p.classList.add("correct");
-      seCorrect.currentTime = 0;
-      seCorrect.play();
-      clearCount++;
-      if (turnCount <= 4) fastClearCount++;
-      updateRecord();
+      log.innerHTML += `<div style='color:lime;'>正解！${turn}ターンでクリア！</div>`;
+      savePlayerData(turn <= 4 ? 'fastwin' : 'win');
     }
-    log.appendChild(p);
   }
 
-  function updateRecord() {
-    document.getElementById("playCount").innerText = playCount;
-    document.getElementById("clearCount").innerText = clearCount;
-    document.getElementById("fastClearCount").innerText = fastClearCount;
+  function restartGame() {
+    answer = generateAnswer();
+    turn = 0;
+    document.getElementById("log").innerHTML = "";
+  }
+
+  function savePlayerData(resultType) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    const userRef = db.collection("players").doc(user.uid);
+
+    db.runTransaction(async (t) => {
+      const doc = await t.get(userRef);
+      const data = doc.exists ? doc.data() : {
+        playCount: 0,
+        winCount: 0,
+        fastWinCount: 0,
+        uid: user.uid,
+      };
+      data.playCount += 1;
+      if (resultType === "win") data.winCount += 1;
+      if (resultType === "fastwin") {
+        data.winCount += 1;
+        data.fastWinCount += 1;
+      }
+      t.set(userRef, data);
+    });
+  }
+
+  function loadRanking() {
+    db.collection("players")
+      .orderBy("winCount", "desc")
+      .limit(10)
+      .get()
+      .then(snapshot => {
+        let html = "<h2>🏆 ランキング</h2><ol>";
+        snapshot.forEach(doc => {
+          const p = doc.data();
+          html += `<li>勝利数: ${p.winCount}（プレイ数: ${p.playCount}, 4ターン勝利: ${p.fastWinCount}）</li>`;
+        });
+        html += "</ol>";
+        document.getElementById("ranking").innerHTML = html;
+      });
   }
 </script>
-
 </body>
 </html>
