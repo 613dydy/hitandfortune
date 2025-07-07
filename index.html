@@ -71,7 +71,7 @@
       letter-spacing: 5px;
     }
     #startBtn {
-      margin-top: 30px;
+      margin-top: 60px;
       position: relative;
       z-index: 10;
     }
@@ -126,6 +126,23 @@
     <div id="log"></div>
   </div>
 
+  <div id="section-rules" class="section">
+    <h2>ルール</h2>
+    <p>3桁の異なる数字を当てるゲームだよ。Hitは位置も数字も合ってる、Blowは数字だけ合ってる！</p>
+  </div>
+  <div id="section-record" class="section">
+    <h2>記録</h2>
+    <p>まだ準備中だけど、将来的に自分の戦績とかも見れるようにするつもりだよ！</p>
+  </div>
+  <div id="section-about" class="section">
+    <h2>自己紹介</h2>
+    <p>暇人です。お金ないです。寄付まってます💛</p>
+  </div>
+  <div id="section-donate" class="section">
+    <h2>寄付</h2>
+    <p>将来的に寄付方法を載せる予定だよ。PayPayとか使えるようにしたいね！</p>
+  </div>
+
 <script>
   let answer = [];
   let turn = 0;
@@ -151,8 +168,7 @@
     document.getElementById("gameUI").style.display = "none";
     document.getElementById("startBtn").style.display = "block";
     document.getElementById("description").style.display = "block";
-    document.getElementById("startBtn").style.marginTop = "30px";
-    document.getElementById("startBtn").style.position = "relative";
+    document.getElementById("startBtn").style.marginTop = "60px";
   }
 
   function startGame() {
@@ -167,8 +183,8 @@
 
   function playGame() {
     const input = document.getElementById("guess").value;
-    if (!/^[0-9]{3}$/.test(input)) {
-      alert("3ケタの数字を入力してね！");
+    if (!/^(?!.*(.).*\1)\d{3}$/.test(input)) {
+      alert("3ケタの異なる数字を入れてね！");
       return;
     }
 
