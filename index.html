@@ -147,6 +147,10 @@
     <div id="log"></div>
   </div>
 
+  <div id="section-game" class="section">
+    <h2>ゲーム</h2>
+    <p>この画面でゲームをプレイできるよ！</p>
+  </div>
   <div id="section-rules" class="section">
     <h2>ルール</h2>
     <p>3桁の異なる数字を当てるゲームだよ。Hitは位置も数字も合ってる、Blowは数字だけ合ってる！</p>
@@ -167,13 +171,98 @@
   </div>
 
 <script>
+  const bgm = document.getElementById("bgm");
+  const seCorrect = document.getElementById("se-correct");
+  const seClick = document.getElementById("se-click");
+
   document.addEventListener("DOMContentLoaded", () => {
-    const bgm = document.getElementById("bgm");
     document.body.addEventListener("click", () => {
       bgm.volume = 0.3;
       bgm.play().catch(err => console.log("BGM 自動再生ブロック:", err));
     }, { once: true });
   });
+
+  function playClick() {
+    seClick.currentTime = 0;
+    seClick.play();
+  }
+
+  function toggleMenu() {
+    const menu = document.getElementById("menuList");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+  }
+
+  function toggleBGM() {
+    if (bgm.paused) {
+      bgm.play();
+    } else {
+      bgm.pause();
+    }
+  }
+
+  function showSection(id) {
+    document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+    document.getElementById("section-" + id).style.display = "block";
+    document.getElementById("gameUI").style.display = "none";
+    document.getElementById("startBtn").style.display = "block";
+    document.getElementById("description").style.display = "block";
+    document.getElementById("startBtn").style.marginTop = "30px";
+    document.getElementById("startBtn").style.position = "relative";
+    document.getElementById("startBtn").style.marginLeft = "auto";
+    document.getElementById("startBtn").style.marginRight = "auto";
+  }
+
+  function startGame() {
+    document.getElementById("gameUI").style.display = "block";
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("description").style.display = "none";
+    document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+    document.getElementById("log").innerHTML = "";
+  }
+
+  function restartGame() {
+    startGame();
+    secret = generateNumber();
+  }
+
+  function zenkakuToHankaku(str) {
+    return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+  }
+
+  let secret = generateNumber();
+
+  function generateNumber() {
+    let digits = [];
+    while (digits.length < 3) {
+      let d = Math.floor(Math.random() * 10).toString();
+      if (!digits.includes(d)) digits.push(d);
+    }
+    return digits.join("");
+  }
+
+  function playGame() {
+    let guessInput = document.getElementById("guess");
+    let guess = zenkakuToHankaku(guessInput.value);
+    if (!/^[0-9]{3}$/.test(guess)) {
+      alert("3桁の数字を入力してね！");
+      return;
+    }
+    let hit = 0, blow = 0;
+    for (let i = 0; i < 3; i++) {
+      if (guess[i] === secret[i]) hit++;
+      else if (secret.includes(guess[i])) blow++;
+    }
+    let result = `予想: ${guess} → 結果: ${hit} Hit / ${blow} Blow`;
+    let log = document.getElementById("log");
+    let p = document.createElement("p");
+    p.innerText = result;
+    if (hit === 3) {
+      p.classList.add("correct");
+      seCorrect.currentTime = 0;
+      seCorrect.play();
+    }
+    log.appendChild(p);
+  }
 </script>
 
 </body>
