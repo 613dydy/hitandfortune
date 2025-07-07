@@ -5,22 +5,47 @@
   <title>Hit & Blow Gamble</title>
   <style>
     body {
-      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
-      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+      background-color: #0e0e0e;
       font-family: 'Georgia', serif;
+      color: #e0e0e0;
       text-align: center;
-      padding: 40px;
+      background-image: radial-gradient(#222 1px, transparent 1px);
+      background-size: 20px 20px; /* サイコロっぽい粒感 */
     }
+
     h1 {
       color: #FFD700;
       font-size: 36px;
-      margin-bottom: 10px;
+      margin-top: 50px;
+      margin-bottom: 20px;
       text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
     }
+
+    #startBtn {
+      margin-top: 60px;
+      padding: 14px 40px;
+      font-size: 18px;
+      background: transparent;
+      color: #FFD700;
+      border: 2px solid #FFD700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #startBtn:hover {
+      background: #FFD700;
+      color: #111;
+      box-shadow: 0 0 10px #FFD70066;
+    }
+
     #gameUI {
       display: none;
-      margin-top: 20px;
+      margin-top: 30px;
     }
+
     input {
       padding: 10px;
       font-size: 20px;
@@ -30,8 +55,8 @@
       color: #FFD700;
       border: 2px solid #FFD700;
       border-radius: 8px;
-      margin-top: 20px;
     }
+
     button {
       padding: 12px 30px;
       font-size: 16px;
@@ -43,22 +68,19 @@
       cursor: pointer;
       transition: all 0.3s ease;
     }
+
     button:hover {
       background-color: #FFD700;
       color: #111;
       box-shadow: 0 0 10px #FFD70055;
     }
-    #coins {
-      color: #FFD700;
-      font-size: 22px;
-    }
+
     #log {
       margin-top: 30px;
       font-size: 18px;
       max-width: 600px;
       margin-left: auto;
       margin-right: auto;
-      text-align: left;
       background: #1a1a1a;
       padding: 20px;
       border: 1px solid #444;
@@ -66,11 +88,14 @@
       box-shadow: 0 0 5px #000;
       min-height: 150px;
       overflow-y: auto;
+      text-align: center; /* ← 中央寄せに！ */
     }
+
     #log p {
-      margin: 8px 0;
+      margin: 10px 0;
       transition: all 0.3s ease;
     }
+
     #log p.correct {
       color: #8fce00;
       font-weight: bold;
@@ -84,20 +109,16 @@
   <button id="startBtn" onclick="startGame()">はじめる</button>
 
   <div id="gameUI">
-    <p>所持コイン: <span id="coins">100</span></p>
-
     <input id="guess" maxlength="3" placeholder="例:123" autocomplete="off" />
     <br />
-    <button onclick="playGame()">プレイ (10コイン)</button>
+    <button onclick="playGame()">プレイ</button>
     <button onclick="restartGame()">再プレイ</button>
 
     <div id="log"></div>
   </div>
 
   <script>
-    let coins = 100;
     let answer = [];
-    let baseReward = 30;
 
     function generateAnswer() {
       const digits = [];
@@ -112,34 +133,15 @@
       answer = generateAnswer();
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('gameUI').style.display = 'block';
-      updateCoins();
       clearLog();
     }
 
-    function updateCoins() {
-      document.getElementById('coins').textContent = coins;
-    }
-
-    function getRate() {
-      if (coins >= 100) return 2.0;
-      if (coins >= 50) return 1.5;
-      return 1.0;
-    }
-
     function playGame() {
-      if (coins < 10) {
-        alert('コインが足りません！');
-        return;
-      }
-
       const input = document.getElementById('guess').value;
       if (!/^\d{3}$/.test(input)) {
         alert('3桁の数字を入力してください');
         return;
       }
-
-      coins -= 10;
-      updateCoins();
 
       const guess = input.split('').map(Number);
       let hit = 0,
@@ -153,17 +155,12 @@
         }
       }
 
-      const result = `結果: ${hit} Hit / ${blow} Blow`;
       const log = document.getElementById('log');
-      log.innerHTML += `<p>予想: ${input} → ${result}</p>`;
+      log.innerHTML += `<p>予想: ${input} → 結果: ${hit} Hit / ${blow} Blow</p>`;
       log.scrollTop = log.scrollHeight;
 
       if (hit === 3) {
-        const rate = getRate();
-        const reward = Math.floor(baseReward * rate);
-        coins += reward;
-        updateCoins();
-        log.innerHTML += `<p class="correct">🎉 正解！${reward}コイン獲得！（レート×${rate}）</p>`;
+        log.innerHTML += `<p class="correct">🎉 正解！次の問題へ！</p>`;
         answer = generateAnswer();
       }
 
