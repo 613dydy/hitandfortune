@@ -81,11 +81,6 @@
       margin: 8px 0;
     }
   </style>
-
-  <!-- Firebase CDN -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 </head>
 <body>
   <div class="menu-button" onclick="toggleMenu()">☰</div>
@@ -118,7 +113,8 @@
   <!-- 記録 -->
   <div class="section" id="section-record">
     <h2>記録とランキング</h2>
-    <button onclick="loginWithGoogle()">Googleでログイン</button>
+    <button id="loginBtn">Googleでログイン</button>
+    <button id="logoutBtn" style="display:none;">ログアウト</button>
     <div id="userStats"></div>
     <div id="ranking"></div>
   </div>
@@ -138,252 +134,258 @@
   <audio id="correctSound" src="correct.mp3"></audio>
   <audio id="clickSound" src="click.mp3"></audio>
 
-<script>
-  // Firebase初期化
-  const firebaseConfig = {
-    apiKey: "AIzaSyCCGEF45sV1nHAqxfrqq80ir3z-ZCbfDho",
-    authDomain: "hitblow-game.firebaseapp.com",
-    projectId: "hitblow-game",
-    storageBucket: "hitblow-game.firebasestorage.app",
-    messagingSenderId: "871466550729",
-    appId: "1:871466550729:web:65c91cc117c7bf61a8d418",
-    measurementId: "G-G08BDBRE2N"
-  };
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, query, collection, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+    // Firebase初期化
+    const firebaseConfig = {
+      apiKey: "AIzaSyCCGEF45sV1nHAqxfrqq80ir3z-ZCbfDho",
+      authDomain: "hitblow-game.firebaseapp.com",
+      projectId: "hitblow-game",
+      storageBucket: "hitblow-game.firebasestorage.app",
+      messagingSenderId: "871466550729",
+      appId: "1:871466550729:web:65c91cc117c7bf61a8d418",
+      measurementId: "G-G08BDBRE2N"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // 効果音再生関数
-  function playCorrect() {
-    const audio = document.getElementById("correctSound");
-    audio.currentTime = 0;
-    audio.play();
-  }
-  function playClick() {
-    const audio = document.getElementById("clickSound");
-    audio.currentTime = 0;
-    audio.play();
-  }
-
-  // メニュー表示切替
-  function toggleMenu() {
-    playClick();
-    const menu = document.getElementById("menuList");
-    if (menu.style.display === "block") {
-      menu.style.display = "none";
-    } else {
-      menu.style.display = "block";
+    // 効果音再生関数
+    function playCorrect() {
+      const audio = document.getElementById("correctSound");
+      audio.currentTime = 0;
+      audio.play();
     }
-  }
-
-  // セクション表示
-  function showSection(id) {
-    playClick();
-    document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-    document.getElementById("section-" + id).style.display = "block";
-    document.getElementById("gameUI").style.display = "none";
-    document.getElementById("startBtn").style.display = "block";
-    document.getElementById("description").style.display = "block";
-    document.getElementById("startBtn").style.marginTop = "50px";
-    document.getElementById("guess").value = "";
-    clearLog();
-    // メニュー閉じる
-    document.getElementById("menuList").style.display = "none";
-  }
-
-  // ゲーム開始
-  function startGame() {
-    playClick();
-    generateSecret();
-    document.getElementById("gameUI").style.display = "block";
-    document.getElementById("startBtn").style.display = "none";
-    document.getElementById("description").style.display = "none";
-    document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-    clearLog();
-  }
-
-  // 再プレイ
-  function restartGame() {
-    playClick();
-    startGame();
-  }
-
-  // ログクリア
-  function clearLog() {
-    document.getElementById("log").innerHTML = "";
-  }
-
-  // 秘密の数字生成（3桁すべて違う数字）
-  let secret = "";
-  function generateSecret() {
-    const digits = [];
-    while (digits.length < 3) {
-      const d = Math.floor(Math.random() * 10).toString();
-      if (!digits.includes(d)) digits.push(d);
-    }
-    secret = digits.join("");
-    //console.log("secret:", secret);
-  }
-
-  // 全角数字→半角数字変換
-  function toHalfWidth(str) {
-    return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-  }
-
-  // プレイ処理
-  async function playGame() {
-    playClick();
-    const guessInput = document.getElementById("guess");
-    let guess = toHalfWidth(guessInput.value.trim());
-
-    if (!/^\d{3}$/.test(guess)) {
-      alert("3桁の数字を入力してね");
-      return;
-    }
-    // 異なる3桁かチェック
-    if (new Set(guess).size !== 3) {
-      alert("数字は重複しない3桁で入力してね");
-      return;
+    function playClick() {
+      const audio = document.getElementById("clickSound");
+      audio.currentTime = 0;
+      audio.play();
     }
 
-    // 判定
-    let hit = 0, blow = 0;
-    for (let i = 0; i < 3; i++) {
-      if (guess[i] === secret[i]) hit++;
-      else if (secret.includes(guess[i])) blow++;
-    }
+    // メニュー表示切替
+    window.toggleMenu = function() {
+      playClick();
+      const menu = document.getElementById("menuList");
+      menu.style.display = (menu.style.display === "block") ? "none" : "block";
+    };
 
-    // ログ表示
-    const log = document.getElementById("log");
-    const entry = document.createElement("p");
-    entry.textContent = `予想: ${guess} → 結果: ${hit} Hit / ${blow} Blow`;
-    entry.style.textAlign = "center";
-    if (hit === 3) {
-      entry.classList.add("correct");
-      playCorrect();
-      alert("3Hit！クリアおめでとう！");
-      await saveRecord(true);
+    // セクション表示
+    window.showSection = function(id) {
+      playClick();
+      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+      document.getElementById("section-" + id).style.display = "block";
+      document.getElementById("gameUI").style.display = "none";
+      document.getElementById("startBtn").style.display = "block";
+      document.getElementById("description").style.display = "block";
+      document.getElementById("startBtn").style.marginTop = "50px";
+      document.getElementById("guess").value = "";
+      clearLog();
+      document.getElementById("menuList").style.display = "none";
+    };
+
+    // ゲーム開始
+    window.startGame = function() {
+      playClick();
+      generateSecret();
+      document.getElementById("gameUI").style.display = "block";
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("description").style.display = "none";
+      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+      clearLog();
+    };
+
+    // 再プレイ
+    window.restartGame = function() {
+      playClick();
       startGame();
-      return;
+    };
+
+    // ログクリア
+    function clearLog() {
+      document.getElementById("log").innerHTML = "";
     }
-    log.appendChild(entry);
 
-    await saveRecord(false);
-
-    guessInput.value = "";
-    guessInput.focus();
-  }
-
-  // ログイン（Google）
-  async function loginWithGoogle() {
-    playClick();
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      const result = await auth.signInWithPopup(provider);
-      alert(`ようこそ、${result.user.displayName}！`);
-      loadUserStats(result.user.uid);
-    } catch (error) {
-      alert("ログイン失敗: " + error.message);
+    // 秘密の数字生成
+    let secret = "";
+    function generateSecret() {
+      const digits = [];
+      while (digits.length < 3) {
+        const d = Math.floor(Math.random() * 10).toString();
+        if (!digits.includes(d)) digits.push(d);
+      }
+      secret = digits.join("");
+      //console.log("secret:", secret);
     }
-  }
 
-  // ログアウト
-  async function logout() {
-    playClick();
-    await auth.signOut();
-    alert("ログアウトしました");
-    document.getElementById("userStats").innerHTML = "";
-  }
+    // 全角数字→半角数字変換
+    function toHalfWidth(str) {
+      return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+    }
 
-  // ユーザーデータ保存（簡易版）
-  async function saveRecord(clear = false) {
-    if (!auth.currentUser) return; // ログインしてなければ保存しない
-    const uid = auth.currentUser.uid;
-    const docRef = db.collection("users").doc(uid);
-    try {
-      await db.runTransaction(async (t) => {
-        const doc = await t.get(docRef);
-        if (!doc.exists) {
-          t.set(docRef, { plays: 1, clears: clear ? 1 : 0 });
+    // プレイ処理
+    window.playGame = async function() {
+      playClick();
+      const guessInput = document.getElementById("guess");
+      let guess = toHalfWidth(guessInput.value.trim());
+
+      if (!/^\d{3}$/.test(guess)) {
+        alert("3桁の数字を入力してね");
+        return;
+      }
+      if (new Set(guess).size !== 3) {
+        alert("数字は重複しない3桁で入力してね");
+        return;
+      }
+
+      let hit = 0, blow = 0;
+      for (let i = 0; i < 3; i++) {
+        if (guess[i] === secret[i]) hit++;
+        else if (secret.includes(guess[i])) blow++;
+      }
+
+      const log = document.getElementById("log");
+      const entry = document.createElement("p");
+      entry.textContent = `予想: ${guess} → 結果: ${hit} Hit / ${blow} Blow`;
+      entry.style.textAlign = "center";
+      if (hit === 3) {
+        entry.classList.add("correct");
+        playCorrect();
+        alert("3Hit！クリアおめでとう！");
+        await saveRecord(true);
+        startGame();
+        return;
+      }
+      log.appendChild(entry);
+
+      await saveRecord(false);
+
+      guessInput.value = "";
+      guessInput.focus();
+    };
+
+    // Googleログイン
+    window.loginWithGoogle = async function() {
+      playClick();
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        alert(`ようこそ、${result.user.displayName}！`);
+        loadUserStats(result.user.uid);
+        showSection("record");
+      } catch (error) {
+        alert("ログイン失敗: " + error.message);
+      }
+    };
+
+    // ログアウト
+    window.logout = async function() {
+      playClick();
+      await signOut(auth);
+      alert("ログアウトしました");
+      document.getElementById("userStats").innerHTML = "";
+      document.getElementById("ranking").innerHTML = "";
+    };
+
+    // 記録保存
+    async function saveRecord(clear = false) {
+      if (!auth.currentUser) return;
+      const uid = auth.currentUser.uid;
+      const docRef = doc(db, "users", uid);
+
+      try {
+        await runTransaction(db, async (t) => {
+          const docSnap = await t.get(docRef);
+          if (!docSnap.exists()) {
+            t.set(docRef, { plays: 1, clears: clear ? 1 : 0 });
+          } else {
+            const data = docSnap.data();
+            t.update(docRef, {
+              plays: (data.plays || 0) + 1,
+              clears: (data.clears || 0) + (clear ? 1 : 0),
+            });
+          }
+        });
+        loadUserStats(uid);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // ユーザー記録表示
+    async function loadUserStats(uid) {
+      const docRef = doc(db, "users", uid);
+      const userStats = document.getElementById("userStats");
+      try {
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+          userStats.innerHTML = "<p>記録がありません。</p><button onclick='logout()'>ログアウト</button>";
         } else {
-          const data = doc.data();
-          t.update(docRef, {
-            plays: (data.plays || 0) + 1,
-            clears: (data.clears || 0) + (clear ? 1 : 0)
-          });
+          const data = docSnap.data();
+          userStats.innerHTML = `
+            <p>プレイ回数: ${data.plays || 0}</p>
+            <p>クリア回数: ${data.clears || 0}</p>
+            <button onclick="logout()">ログアウト</button>
+          `;
+        }
+      } catch (e) {
+        userStats.innerHTML = "<p>記録の読み込みに失敗しました。</p>";
+        console.error(e);
+      }
+    }
+
+    // ランキング表示
+    async function loadRanking() {
+      const rankingDiv = document.getElementById("ranking");
+      rankingDiv.innerHTML = "<p>ランキング読み込み中...</p>";
+      try {
+        const q = query(collection(db, "users"), orderBy("clears", "desc"), limit(10));
+        const querySnapshot = await getDocs(q);
+        let html = "<h3>ランキング（クリア回数上位10名）</h3><ol>";
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const name = data.name || docSnap.id.substring(0,6);
+          html += `<li>${name} - クリア: ${data.clears || 0}回</li>`;
+        });
+        html += "</ol>";
+        rankingDiv.innerHTML = html;
+      } catch (e) {
+        rankingDiv.innerHTML = "<p>ランキングの読み込みに失敗しました。</p>";
+        console.error(e);
+      }
+    }
+
+    // 初期化など
+    window.addEventListener("DOMContentLoaded", () => {
+      // 全角数字→半角自動変換
+      document.getElementById("guess").addEventListener("input", (e) => {
+        const half = e.target.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+        if (half !== e.target.value) e.target.value = half;
+      });
+
+      // Firebase認証状態変化監視
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loadUserStats(user.uid);
+          loadRanking();
+          document.getElementById("loginBtn").style.display = "none";
+          document.getElementById("logoutBtn").style.display = "inline-block";
+        } else {
+          document.getElementById("userStats").innerHTML = "";
+          document.getElementById("ranking").innerHTML = "";
+          document.getElementById("loginBtn").style.display = "inline-block";
+          document.getElementById("logoutBtn").style.display = "none";
         }
       });
-      loadUserStats(uid);
-    } catch (e) {
-      console.error(e);
-    }
-  }
 
-  // ユーザー記録表示
-  async function loadUserStats(uid) {
-    const docRef = db.collection("users").doc(uid);
-    const userStats = document.getElementById("userStats");
-    try {
-      const doc = await docRef.get();
-      if (!doc.exists) {
-        userStats.innerHTML = "<p>記録がありません。</p>";
-      } else {
-        const data = doc.data();
-        userStats.innerHTML = `
-          <p>プレイ回数: ${data.plays || 0}</p>
-          <p>クリア回数: ${data.clears || 0}</p>
-          <button onclick="logout()">ログアウト</button>
-        `;
-      }
-    } catch (e) {
-      userStats.innerHTML = "<p>記録の読み込みに失敗しました。</p>";
-      console.error(e);
-    }
-  }
+      // ボタンイベント設定
+      document.getElementById("loginBtn").onclick = loginWithGoogle;
+      document.getElementById("logoutBtn").onclick = logout;
 
-  // ランキング表示（クリア回数多い順）
-  async function loadRanking() {
-    const rankingDiv = document.getElementById("ranking");
-    rankingDiv.innerHTML = "<p>ランキング読み込み中...</p>";
-    try {
-      const querySnapshot = await db.collection("users")
-        .orderBy("clears", "desc")
-        .limit(10)
-        .get();
-      let html = "<h3>ランキング（クリア回数上位10名）</h3><ol>";
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        html += `<li>ユーザー: ${doc.id} - クリア: ${data.clears || 0}回</li>`;
-      });
-      html += "</ol>";
-      rankingDiv.innerHTML = html;
-    } catch (e) {
-      rankingDiv.innerHTML = "<p>ランキングの読み込みに失敗しました。</p>";
-      console.error(e);
-    }
-  }
-
-  // ページ読み込み時の初期化
-  document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("guess").addEventListener("input", e => {
-      // 全角数字→半角数字自動変換
-      const half = e.target.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-      if (half !== e.target.value) e.target.value = half;
+      generateSecret();
     });
-
-    // Firebase認証状態変化の監視
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        loadUserStats(user.uid);
-        loadRanking();
-      } else {
-        document.getElementById("userStats").innerHTML = '<button onclick="loginWithGoogle()">Googleでログイン</button>';
-        document.getElementById("ranking").innerHTML = "";
-      }
-    });
-  });
-</script>
-
+  </script>
 </body>
 </html>
