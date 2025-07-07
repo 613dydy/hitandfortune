@@ -2,85 +2,78 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hit & Blow</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+  <title>Hit & Blow with Firebase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      background: #0e0e0e;
+      margin: 0; padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #0e0e0e;
       background-image: radial-gradient(#444 2px, transparent 1px);
       background-size: 30px 30px;
-      font-family: 'Arial', sans-serif;
       color: #e0e0e0;
       text-align: center;
-      margin: 0;
     }
-    h1 {
-      margin-top: 80px;
-      color: #FFD700;
-    }
-    button, input {
-      font-size: 18px;
-      padding: 10px;
-      margin: 10px;
-      border-radius: 5px;
-      border: 2px solid #FFD700;
-      background: transparent;
-      color: #FFD700;
-    }
-    input {
-      width: 160px;
-      text-align: center;
-      letter-spacing: 5px;
-    }
+    h1 { margin-top: 80px; color: #FFD700; font-size: 2em; }
     .menu-button {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      font-size: 30px;
-      color: #FFD700;
-      cursor: pointer;
-      z-index: 1000;
+      position: fixed; top: 20px; right: 20px;
+      font-size: 30px; color: #FFD700; cursor: pointer; z-index: 1000;
     }
     .menu-list {
       display: none;
-      position: fixed;
-      top: 60px;
-      right: 20px;
-      background: #111;
-      border: 1px solid #FFD700;
-      border-radius: 10px;
-      padding: 10px;
-      z-index: 999;
+      position: fixed; top: 60px; right: 20px;
+      background: #111; border: 1px solid #FFD700;
+      border-radius: 10px; padding: 10px; z-index: 999;
     }
     .menu-list button {
-      display: block;
-      width: 150px;
-      background: transparent;
-      border: none;
-      color: #FFD700;
-      text-align: left;
-      padding: 10px;
-      font-size: 16px;
-      cursor: pointer;
+      display: block; width: 150px;
+      background: transparent; border: none;
+      color: #FFD700; text-align: left;
+      padding: 10px; font-size: 16px; cursor: pointer;
     }
-    .section {
-      display: none;
-      padding: 20px;
-      margin-top: 20px;
-      background: #1a1a1a;
-      border: 1px solid #444;
-      border-radius: 10px;
-      max-width: 90%;
-      margin-left: auto;
-      margin-right: auto;
+    button, input {
+      font-size: 18px; padding: 10px; margin: 5px;
+      border-radius: 5px; border: 2px solid #FFD700;
+      background: transparent; color: #FFD700;
+    }
+    button:hover {
+      background: #FFD700; color: #111;
+    }
+    input {
+      width: 160px; text-align: center; font-size: 22px; letter-spacing: 5px;
+    }
+    #startBtn {
+      margin-top: 30px; position: relative; z-index: 10;
     }
     #gameUI {
       display: none;
     }
+    #log {
+      margin: 20px auto; max-width: 300px;
+      background: #1a1a1a; padding: 10px;
+      border-radius: 10px; border: 1px solid #444;
+      text-align: center;
+    }
+    .correct {
+      color: #8fce00; font-weight: bold;
+    }
+    .section {
+      display: none;
+      padding: 20px; margin-top: 20px;
+      background: #1a1a1a; border: 1px solid #444;
+      border-radius: 10px; max-width: 90%;
+      margin-left: auto; margin-right: auto;
+      text-align: center;
+    }
+    #userStats p, #ranking ol {
+      margin: 8px 0;
+    }
   </style>
+
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 </head>
 <body>
   <div class="menu-button" onclick="toggleMenu()">☰</div>
@@ -97,7 +90,7 @@
   <button id="startBtn" onclick="startGame()">はじめる</button>
 
   <div id="gameUI">
-    <p>3ケタの数字を入力してね</p>
+    <p style="margin-top: 20px; font-size: 16px; color: #ccc;">予想したい3ケタの数字を入力してね</p>
     <input id="guess" maxlength="3" placeholder="例:123" />
     <br />
     <button onclick="playGame()">プレイ</button>
@@ -105,29 +98,37 @@
     <div id="log"></div>
   </div>
 
+  <!-- ルール -->
   <div class="section" id="section-rules">
-    <p>Hit: 数字も位置も一致 / Blow: 数字のみ一致</p>
+    <h2>ルール</h2>
+    <p>3桁の数字を当てる記憶ゲームだよ。数字はすべて異なるよ。</p>
   </div>
 
+  <!-- 記録 -->
   <div class="section" id="section-record">
-    <div id="userInfo" style="margin: 10px; color: #FFD700;"></div>
+    <h2>記録とランキング</h2>
     <button onclick="loginWithGoogle()">Googleでログイン</button>
     <div id="userStats"></div>
-    <div id="ranking">読み込み中...</div>
+    <div id="ranking"></div>
   </div>
 
+  <!-- 自己紹介 -->
   <div class="section" id="section-about">
+    <h2>自己紹介</h2>
     <p>暇人です。お金ないです。寄付まってます💛</p>
   </div>
 
+  <!-- 寄付 -->
   <div class="section" id="section-donate">
-    <p>寄付方法は準備中だよ！</p>
+    <h2>寄付</h2>
+    <p>まだ準備中だよ！</p>
   </div>
 
-<audio id="correctSound" src="correct.mp3"></audio>
-<audio id="clickSound" src="click.mp3"></audio>
+  <audio id="correctSound" src="correct.mp3"></audio>
+  <audio id="clickSound" src="click.mp3"></audio>
 
 <script>
+  // Firebase初期化
   const firebaseConfig = {
     apiKey: "AIzaSyCCGEF45sV1nHAqxfrqq80ir3z-ZCbfDho",
     authDomain: "hitblow-game.firebaseapp.com",
@@ -137,146 +138,288 @@
     appId: "1:871466550729:web:65c91cc117c7bf61a8d418",
     measurementId: "G-G08BDBRE2N"
   };
+
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  auth.onAuthStateChanged(user => {
+  // メニュー表示切替
+  function toggleMenu() {
+    playClick();
+    const menu = document.getElementById("menuList");
+    menu.style.display = (menu.style.display === "block") ? "none" : "block";
+  }
+
+  // セクション表示
+  function showSection(id) {
+    playClick();
+    document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+    document.getElementById("section-" + id).style.display = "block";
+    document.getElementById("gameUI").style.display = "none";
+    document.getElementById("startBtn").style.display = "block";
+    document.getElementById("description").style.display = "block";
+    document.getElementById("startBtn").style.marginTop = "30px";
+  }
+
+  // ゲーム開始
+  function startGame() {
+    playClick();
+    document.getElementById("gameUI").style.display = "block";
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("description").style.display = "none";
+    document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+    clearLog();
+  }
+
+  // 効果音
+  function playCorrect() {
+    document.getElementById("correctSound").currentTime = 0;
+    document.getElementById("correctSound").play();
+  }
+  function playClick() {
+    document.getElementById("clickSound").currentTime = 0;
+    document.getElementById("clickSound").play();
+  }
+
+  // ログクリア
+  function clearLog() {
+    document.getElementById("log").innerHTML = "";
+  }
+
+  // 3桁の秘密の数字
+  let secret = "";
+  function generateSecret() {
+    let digits = [];
+    while (digits.length < 3) {
+      let n = Math.floor(Math.random() * 10);
+      if (!digits.includes(n)) digits.push(n);
+    }
+    secret = digits.join("");
+  }
+
+  // 入力値を全角→半角変換
+  function toHalfWidth(str) {
+    return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+  }
+
+  // ゲームプレイ
+  async function playGame() {
+    playClick();
+    let guessInput = document.getElementById("guess");
+    let guess = toHalfWidth(guessInput.value.trim());
+    if (!/^\d{3}$/.test(guess)) {
+      alert("3桁の数字を入れてね");
+      return;
+    }
+    if (new Set(guess).size !== 3) {
+      alert("3つの数字は重複なしでお願いします");
+      return;
+    }
+
+    // 判定
+    let hit = 0;
+    let blow = 0;
+    for (let i = 0; i < 3; i++) {
+      if (guess[i] === secret[i]) hit++;
+      else if (secret.includes(guess[i])) blow++;
+    }
+    addLog(`予想: ${guess} → 結果: <span class="${hit === 3 ? "correct" : ""}">${hit} Hit / ${blow} Blow</span>`);
+
+    // 成功時効果音
+    if (hit === 3) playCorrect();
+
+    // 記録更新
+    await updateStats(hit);
+
+    guessInput.value = "";
+  }
+
+  // ログ追加
+  function addLog(text) {
+    const log = document.getElementById("log");
+    log.innerHTML = text + "<br>" + log.innerHTML;
+  }
+
+  // 記録・ランキング用ユーザーデータ取得
+  let currentUser = null;
+  auth.onAuthStateChanged(async (user) => {
     if (user) {
-      document.getElementById("userInfo").innerText = user.isAnonymous ? "ゲストプレイ中" : "ログイン済み";
+      currentUser = user;
+      const userRef = db.collection("players").doc(user.uid);
+      const doc = await userRef.get();
+      if (!doc.exists && !user.isAnonymous) {
+        await userRef.set({
+          displayName: user.displayName || "ゲスト",
+          photoURL: user.photoURL || "",
+          playCount: 0,
+          winCount: 0,
+          fastWinCount: 0
+        });
+      }
       loadUserStats();
+      loadRanking();
     } else {
+      // 匿名ログイン
       auth.signInAnonymously().catch(console.error);
+      currentUser = null;
+      document.getElementById("userStats").innerHTML = "";
+      document.getElementById("ranking").innerHTML = "";
     }
   });
 
+  // スタッツ更新
+  async function updateStats(hit) {
+    if (!currentUser) return;
+    const userRef = db.collection("players").doc(currentUser.uid);
+
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(userRef);
+      if (!doc.exists) {
+        transaction.set(userRef, {
+          displayName: currentUser.displayName || "ゲスト",
+          photoURL: currentUser.photoURL || "",
+          playCount: 1,
+          winCount: hit === 3 ? 1 : 0,
+          fastWinCount: hit === 3 && guessCount <= 4 ? 1 : 0
+        });
+      } else {
+        const data = doc.data();
+        transaction.update(userRef, {
+          playCount: (data.playCount || 0) + 1,
+          winCount: (data.winCount || 0) + (hit === 3 ? 1 : 0),
+          fastWinCount: (data.fastWinCount || 0) + (hit === 3 && guessCount <= 4 ? 1 : 0)
+        });
+      }
+    });
+
+    loadUserStats();
+    loadRanking();
+  }
+
+  // ユーザースタッツ読み込み
+  async function loadUserStats() {
+    if (!currentUser) return;
+    const userRef = db.collection("players").doc(currentUser.uid);
+    const doc = await userRef.get();
+    if (!doc.exists) return;
+    const p = doc.data();
+
+    // 順位計算
+    const snapshot = await db.collection("players").orderBy("winCount", "desc").get();
+    let rank = 1;
+    snapshot.forEach((doc) => {
+      if (doc.id === currentUser.uid) return;
+      if ((doc.data().winCount || 0) > (p.winCount || 0)) rank++;
+    });
+
+    document.getElementById("userStats").innerHTML = `
+      <p>${p.displayName || "ゲスト"}さんの記録</p>
+      <p>プレイ数: ${p.playCount || 0}</p>
+      <p>勝利数: ${p.winCount || 0}</p>
+      <p>4ターン以内勝利: ${p.fastWinCount || 0}</p>
+      <p>🏅 あなたの順位: ${rank} 位</p>
+    `;
+  }
+
+  // ランキング読み込み
+  async function loadRanking() {
+    const snapshot = await db.collection("players")
+      .orderBy("winCount", "desc")
+      .limit(10)
+      .get();
+
+    let html = "<h2>🏆 ランキング</h2><ol>";
+    snapshot.forEach(doc => {
+      const p = doc.data();
+      html += `<li>${p.displayName || "ゲスト"} - 勝利数: ${p.winCount || 0}（プレイ: ${p.playCount || 0}, 4ターン勝利: ${p.fastWinCount || 0}）</li>`;
+    });
+    html += "</ol>";
+
+    document.getElementById("ranking").innerHTML = html;
+  }
+
+  // Googleログイン
   function loginWithGoogle() {
+    playClick();
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch(console.error);
   }
 
-  function toggleMenu() {
-    document.getElementById("clickSound").play();
-    const menu = document.getElementById("menuList");
-    menu.style.display = menu.style.display === "block" ? "none" : "block";
-  }
+  // 秘密の数字と予想回数
+  let secret = "";
+  let guessCount = 0;
 
-  function showSection(id) {
-    document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
-    document.getElementById("section-" + id).style.display = "block";
-    if (id === "record") {
-      loadRanking();
-      loadUserStats();
+  function generateSecret() {
+    let digits = [];
+    while (digits.length < 3) {
+      let n = Math.floor(Math.random() * 10);
+      if (!digits.includes(n)) digits.push(n);
     }
+    secret = digits.join("");
+    guessCount = 0;
   }
 
+  // ゲーム開始時に秘密の数字生成
   function startGame() {
-    document.getElementById("clickSound").play();
+    playClick();
+    generateSecret();
     document.getElementById("gameUI").style.display = "block";
     document.getElementById("startBtn").style.display = "none";
     document.getElementById("description").style.display = "none";
-    document.getElementById("log").innerHTML = "";
-    answer = generateAnswer();
-    turn = 0;
+    document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+    clearLog();
   }
 
-  let answer = generateAnswer();
-  let turn = 0;
-
-  function generateAnswer() {
-    let digits = [];
-    while (digits.length < 3) {
-      const r = Math.floor(Math.random() * 10);
-      if (!digits.includes(r)) digits.push(r);
-    }
-    return digits;
-  }
-
-  function playGame() {
-    let input = document.getElementById("guess").value.trim();
-    input = input.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 65248));
-    if (!/^[0-9]{3}$/.test(input)) {
-      alert("3ケタの数字を入れてね！");
+  // ゲームプレイ処理
+  async function playGame() {
+    playClick();
+    const guessInput = document.getElementById("guess");
+    let guess = toHalfWidth(guessInput.value.trim());
+    if (!/^\d{3}$/.test(guess)) {
+      alert("3桁の数字を入れてね");
       return;
     }
-    const guess = input.split('').map(Number);
-    let hit = 0, blow = 0;
+    if (new Set(guess).size !== 3) {
+      alert("3つの数字は重複なしでお願いします");
+      return;
+    }
+
+    guessCount++;
+
+    // 判定
+    let hit = 0;
+    let blow = 0;
     for (let i = 0; i < 3; i++) {
-      if (guess[i] === answer[i]) hit++;
-      else if (answer.includes(guess[i])) blow++;
+      if (guess[i] === secret[i]) hit++;
+      else if (secret.includes(guess[i])) blow++;
     }
-    const log = document.getElementById("log");
-    const result = `予想: ${input} → ${hit} Hit / ${blow} Blow`;
-    log.innerHTML += `<div>${result}</div>`;
-    turn++;
-    if (hit === 3) {
-      document.getElementById("correctSound").play();
-      log.innerHTML += `<div style='color:lime;'>正解！${turn}ターンでクリア！</div>`;
-      savePlayerData(turn <= 4 ? 'fastwin' : 'win');
-    }
+
+    addLog(`予想: ${guess} → 結果: <span class="${hit === 3 ? "correct" : ""}">${hit} Hit / ${blow} Blow</span>`);
+
+    if (hit === 3) playCorrect();
+
+    await updateStats(hit);
+
+    guessInput.value = "";
   }
 
   function restartGame() {
-    document.getElementById("clickSound").play();
-    answer = generateAnswer();
-    turn = 0;
-    document.getElementById("log").innerHTML = "";
+    playClick();
+    generateSecret();
+    clearLog();
   }
 
-  function savePlayerData(resultType) {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    const userRef = db.collection("players").doc(user.uid);
-
-    db.runTransaction(async (t) => {
-      const doc = await t.get(userRef);
-      const data = doc.exists ? doc.data() : {
-        playCount: 0,
-        winCount: 0,
-        fastWinCount: 0,
-        uid: user.uid,
-      };
-      data.playCount += 1;
-      if (resultType === "win") data.winCount += 1;
-      if (resultType === "fastwin") {
-        data.winCount += 1;
-        data.fastWinCount += 1;
-      }
-      t.set(userRef, data);
-    });
+  // ログ追加
+  function addLog(text) {
+    const log = document.getElementById("log");
+    log.innerHTML = text + "<br>" + log.innerHTML;
   }
 
-  function loadRanking() {
-    db.collection("players")
-      .orderBy("winCount", "desc")
-      .limit(10)
-      .get()
-      .then(snapshot => {
-        let html = "<h2>🏆 ランキング</h2><ol>";
-        snapshot.forEach(doc => {
-          const p = doc.data();
-          html += `<li>勝利数: ${p.winCount}（プレイ数: ${p.playCount}, 4ターン勝利: ${p.fastWinCount}）</li>`;
-        });
-        html += "</ol>";
-        document.getElementById("ranking").innerHTML = html;
-      });
+  // 入力全角→半角変換
+  function toHalfWidth(str) {
+    return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
   }
 
-  function loadUserStats() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    db.collection("players").doc(user.uid).get().then(doc => {
-      if (doc.exists) {
-        const p = doc.data();
-        document.getElementById("userStats").innerHTML = `
-          <p>あなたの記録</p>
-          <p>プレイ数: ${p.playCount}</p>
-          <p>勝利数: ${p.winCount}</p>
-          <p>4ターン以内勝利: ${p.fastWinCount}</p>
-        `;
-      }
-    });
-  }
 </script>
 </body>
 </html>
