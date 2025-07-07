@@ -19,6 +19,7 @@
       margin-top: 80px;
       color: #FFD700;
       font-size: 2em;
+      text-align: center;
     }
     .menu-button {
       position: fixed;
@@ -54,11 +55,12 @@
     button, input {
       font-size: 18px;
       padding: 10px;
-      margin: 5px;
+      margin: 5px auto;
       border-radius: 5px;
       border: 2px solid #FFD700;
       background: transparent;
       color: #FFD700;
+      display: block;
     }
     button:hover {
       background: #FFD700;
@@ -69,11 +71,15 @@
       text-align: center;
       font-size: 22px;
       letter-spacing: 5px;
+      margin: 10px auto;
     }
     #startBtn {
       margin-top: 60px;
       position: relative;
       z-index: 10;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
     #gameUI {
       display: none;
@@ -101,7 +107,7 @@
       max-width: 90%;
       margin-left: auto;
       margin-right: auto;
-      text-align: left;
+      text-align: center;
     }
   </style>
 </head>
@@ -156,6 +162,10 @@
     fastClearCount: 0,
   };
 
+  function toHalfWidth(str) {
+    return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+  }
+
   function generateAnswer() {
     const digits = [];
     while (digits.length < 3) {
@@ -178,7 +188,6 @@
     document.getElementById("startBtn").style.display = "block";
     document.getElementById("description").style.display = "block";
     document.getElementById("startBtn").style.marginTop = "60px";
-    // メニュー閉じる
     document.getElementById("menuList").style.display = "none";
   }
 
@@ -194,13 +203,13 @@
     document.getElementById("description").style.display = "none";
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
     document.getElementById("log").innerHTML = "";
-    // メニュー閉じる
     document.getElementById("menuList").style.display = "none";
   }
 
   function playGame() {
-    const input = document.getElementById("guess").value;
-    if (!/^(?!.*(.).*\\1)\\d{3}$/.test(input)) {
+    let input = document.getElementById("guess").value;
+    input = toHalfWidth(input);
+    if (!/^\d{3}$/.test(input) || new Set(input).size !== 3) {
       alert("3ケタの異なる数字を入れてね！");
       return;
     }
@@ -266,7 +275,6 @@
     }
   }
 
-  // 記録画面を開いたら最新の記録を表示
   document.querySelector('button[onclick="showSection(\'record\')"]').addEventListener("click", showRecord);
 </script>
 </body>
