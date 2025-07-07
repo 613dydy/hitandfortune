@@ -3,21 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <title>Hit & Blow Gamble</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 0;
       font-family: 'Georgia', serif;
       color: #e0e0e0;
-      text-align: center;
       background-color: #0e0e0e;
-      background-image: radial-gradient(#555 2px, transparent 2px);
+      background-image: radial-gradient(#444 2px, transparent 1px);
       background-size: 30px 30px;
+      text-align: center;
     }
 
     h1 {
       color: #FFD700;
-      font-size: 36px;
+      font-size: 2em;
       margin-top: 60px;
       text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
     }
@@ -61,8 +66,14 @@
       background-color: #FFD70022;
     }
 
+    #description {
+      margin: 20px;
+      font-size: 16px;
+      color: #ccc;
+    }
+
     #startBtn {
-      margin-top: 60px;
+      margin: 10px auto 30px;
       padding: 14px 40px;
       font-size: 18px;
       background: transparent;
@@ -81,13 +92,14 @@
 
     #gameUI {
       display: none;
-      margin-top: 30px;
+      margin-top: 20px;
     }
 
     input {
       padding: 10px;
       font-size: 20px;
       width: 100px;
+      max-width: 50vw;
       text-align: center;
       background: #111;
       color: #FFD700;
@@ -96,7 +108,7 @@
     }
 
     button {
-      padding: 12px 30px;
+      padding: 10px 25px;
       font-size: 16px;
       background: transparent;
       color: #FFD700;
@@ -114,24 +126,22 @@
     }
 
     #log {
-      margin-top: 30px;
+      margin-top: 20px;
       font-size: 18px;
-      max-width: 600px;
+      max-width: 90%;
       margin-left: auto;
       margin-right: auto;
       background: #1a1a1a;
-      padding: 20px;
+      padding: 15px;
       border: 1px solid #444;
       border-radius: 10px;
-      box-shadow: 0 0 5px #000;
-      min-height: 150px;
+      min-height: 120px;
       overflow-y: auto;
       text-align: center;
     }
 
     #log p {
-      margin: 10px 0;
-      transition: all 0.3s ease;
+      margin: 8px 0;
     }
 
     #log p.correct {
@@ -141,18 +151,35 @@
     }
 
     .section {
+      display: none;
       margin: 40px auto;
-      max-width: 700px;
+      max-width: 90%;
       background: #1a1a1a;
       border: 1px solid #333;
       padding: 20px;
       border-radius: 10px;
-      display: none;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.8em;
+      }
+
+      input {
+        width: 80px;
+        font-size: 18px;
+      }
+
+      button {
+        font-size: 15px;
+        padding: 10px 20px;
+      }
     }
   </style>
 </head>
 <body>
 
+  <!-- メニュー -->
   <div class="menu-button" onclick="toggleMenu()">☰</div>
   <div class="menu-list" id="menuList">
     <button onclick="showSection('game')">ゲーム</button>
@@ -162,36 +189,36 @@
   </div>
 
   <h1>Hit & Blow Gamble</h1>
+
+  <!-- ゲーム説明 -->
+  <div id="description">記憶力が試される、シンプルで中毒性のあるゲームです。</div>
+
+  <!-- スタートボタン -->
   <button id="startBtn" onclick="startGame()">はじめる</button>
 
+  <!-- ゲーム本体 -->
   <div id="gameUI">
     <input id="guess" maxlength="3" placeholder="例:123" autocomplete="off" />
     <br />
     <button onclick="playGame()">プレイ</button>
     <button onclick="restartGame()">再プレイ</button>
-
     <div id="log"></div>
   </div>
 
   <!-- 各セクション -->
-  <div class="section" id="section-game">
-    <h2>🎮 ゲームについて</h2>
-    <p>これはHit&Blowの3桁数字ゲームです。あなたの直感と記憶力が試されます！</p>
-  </div>
-
   <div class="section" id="section-rules">
     <h2>📜 ルール</h2>
-    <p>3桁の数字を入力してください。数字と位置が合っていれば「Hit」、位置が違えば「Blow」となります。3Hitで正解です！</p>
+    <p>3桁の数字を入力してください。数字と位置が合っていれば「Hit」、位置が違えば「Blow」。3Hitで正解！</p>
   </div>
 
   <div class="section" id="section-about">
     <h2>👤 自己紹介</h2>
-    <p>このサイトは個人で作成しています。ご意見・フィードバック歓迎です。</p>
+    <p>暇人です。お金ないです。寄付まってます💛</p>
   </div>
 
   <div class="section" id="section-donate">
     <h2>💰 寄付</h2>
-    <p>今後の開発のために寄付を受け付けています（※実装はまだ）</p>
+    <p>応援してくれる方はぜひ寄付してね！（今後導入予定）</p>
   </div>
 
   <script>
@@ -203,10 +230,15 @@
     }
 
     function showSection(id) {
+      // セクション表示切り替え
       document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
-      document.getElementById(`section-${id}`).style.display = "block";
+      document.getElementById("section-" + id).style.display = "block";
+
+      // ゲームUIは非表示に
       document.getElementById("gameUI").style.display = "none";
       document.getElementById("startBtn").style.display = "block";
+      document.getElementById("description").style.display = "block";
+
       toggleMenu();
     }
 
@@ -221,8 +253,9 @@
 
     function startGame() {
       answer = generateAnswer();
-      document.getElementById('startBtn').style.display = 'none';
-      document.getElementById('gameUI').style.display = 'block';
+      document.getElementById("gameUI").style.display = "block";
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("description").style.display = "none";
       document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
       clearLog();
     }
@@ -235,8 +268,7 @@
       }
 
       const guess = input.split('').map(Number);
-      let hit = 0,
-        blow = 0;
+      let hit = 0, blow = 0;
 
       for (let i = 0; i < 3; i++) {
         if (guess[i] === answer[i]) {
@@ -259,15 +291,15 @@
       document.getElementById('guess').focus();
     }
 
-    function clearLog() {
-      document.getElementById('log').innerHTML = '';
-    }
-
     function restartGame() {
       clearLog();
       answer = generateAnswer();
       document.getElementById('guess').value = '';
       document.getElementById('guess').focus();
+    }
+
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
     }
   </script>
 </body>
