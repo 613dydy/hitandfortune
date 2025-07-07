@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Hit & Blow with Firebase</title>
+  <title>Hit & Blow</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -13,12 +13,12 @@
       background-size: 30px 30px;
       color: #e0e0e0;
       text-align: center;
-      user-select: none;
     }
     h1 { margin-top: 80px; color: #FFD700; font-size: 2em; }
     .menu-button {
       position: fixed; top: 20px; right: 20px;
       font-size: 30px; color: #FFD700; cursor: pointer; z-index: 1000;
+      user-select: none;
     }
     .menu-list {
       display: none;
@@ -33,6 +33,7 @@
       background: transparent; border: none;
       color: #FFD700; text-align: center;
       padding: 10px; font-size: 16px; cursor: pointer;
+      user-select: none;
     }
     button, input {
       font-size: 18px; padding: 10px; margin: 5px auto;
@@ -40,6 +41,7 @@
       background: transparent; color: #FFD700;
       display: block;
       max-width: 200px;
+      user-select: none;
     }
     button:hover {
       background: #FFD700; color: #111;
@@ -75,30 +77,11 @@
       margin-left: auto; margin-right: auto;
       text-align: center;
     }
-    #userStats p, #ranking ol {
-      margin: 8px 0;
-    }
-    #donateQR {
-      margin-top: 20px;
-      max-width: 200px;
-      border-radius: 10px;
-      border: 2px solid #FFD700;
-      box-shadow: 0 0 10px #FFD700;
-    }
   </style>
 </head>
 <body>
-  <div class="menu-button" onclick="toggleMenu()">☰</div>
-  <div class="menu-list" id="menuList">
-    <button onclick="showSection('game')">ゲーム</button>
-    <button onclick="showSection('rules')">ルール</button>
-    <button onclick="showSection('record')">記録</button>
-    <button onclick="showSection('about')">概要</button>
-    <button onclick="showSection('donate')">寄付</button>
-  </div>
-
   <h1>Hit & Blow</h1>
-  <div id="description">シンプルだけどクセになる記憶ゲーム</div>
+  <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
   <button id="startBtn" onclick="startGame()">はじめる</button>
 
   <div id="gameUI">
@@ -109,113 +92,20 @@
     <div id="log"></div>
   </div>
 
-  <!-- ルール -->
-  <div class="section" id="section-rules">
-    <h2>ルール</h2>
-    <p>hitは位置も数字で、blowは数字だけあってるよ！わかりづらいよね？もしわからなかったら、ほかの人が説明してるとおもうから、そっちをみてね！</p>
-  </div>
-
-  <!-- 記録 -->
-  <div class="section" id="section-record">
-    <h2>記録とランキング</h2>
-    <button id="loginBtn">Googleでログイン</button>
-    <button id="logoutBtn" style="display:none;">ログアウト</button>
-    <div id="userStats"></div>
-    <div id="ranking"></div>
-  </div>
-
-  <!-- 概要 -->
-  <div class="section" id="section-about">
-    <h2>概要</h2>
-    <p>暇つぶしにどうぞ！<br>寄付も大歓迎だよ！気が向いたらよろしくね💛</p>
-  </div>
-
-  <!-- 寄付 -->
-  <div class="section" id="section-donate">
-    <h2>寄付</h2>
-    <p>PayPayのQRコードはこちら！</p>
-    <img id="donateQR" src="https://qr.paypay.ne.jp/p2p01_Pi52F4YbQaCIx7de" alt="PayPay QRコード" />
-  </div>
-
-  <!-- 効果音 -->
-  <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
-  <audio id="clickSound" src="click.mp3" preload="auto"></audio>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, runTransaction, query, collection, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-    // Firebase初期化
-    const firebaseConfig = {
-      apiKey: "AIzaSyCCGEF45sV1nHAqxfrqq80ir3z-ZCbfDho",
-      authDomain: "hitblow-game.firebaseapp.com",
-      projectId: "hitblow-game",
-      storageBucket: "hitblow-game.firebasestorage.app",
-      messagingSenderId: "871466550729",
-      appId: "1:871466550729:web:65c91cc117c7bf61a8d418",
-      measurementId: "G-G08BDBRE2N"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // 効果音再生関数
-    function playCorrect() {
-      const audio = document.getElementById("correctSound");
-      audio.currentTime = 0;
-      audio.play();
-    }
-    function playClick() {
-      const audio = document.getElementById("clickSound");
-      audio.currentTime = 0;
-      audio.play();
-    }
-
-    // メニュー表示切替
-    window.toggleMenu = function() {
-      playClick();
-      const menu = document.getElementById("menuList");
-      menu.style.display = (menu.style.display === "block") ? "none" : "block";
-    };
-
-    // セクション表示
-    window.showSection = function(id) {
-      playClick();
-      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-      document.getElementById("section-" + id).style.display = "block";
-      document.getElementById("gameUI").style.display = "none";
-      document.getElementById("startBtn").style.display = "block";
-      document.getElementById("description").style.display = "block";
-      document.getElementById("startBtn").style.marginTop = "50px";
-      document.getElementById("guess").value = "";
-      clearLog();
-      document.getElementById("menuList").style.display = "none";
-    };
-
-    // ゲーム開始
-    window.startGame = function() {
-      playClick();
-      generateSecret();
+  <script>
+    function startGame() {
       document.getElementById("gameUI").style.display = "block";
       document.getElementById("startBtn").style.display = "none";
       document.getElementById("description").style.display = "none";
-      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-      clearLog();
-    };
-
-    // 再プレイ
-    window.restartGame = function() {
-      playClick();
-      startGame();
-    };
-
-    // ログクリア
-    function clearLog() {
-      document.getElementById("log").innerHTML = "";
+      generateSecret();
     }
 
-    // 秘密の数字生成
+    function restartGame() {
+      document.getElementById("guess").value = "";
+      document.getElementById("log").innerHTML = "";
+      generateSecret();
+    }
+
     let secret = "";
     function generateSecret() {
       const digits = [];
@@ -226,17 +116,23 @@
       secret = digits.join("");
     }
 
-    // 全角数字→半角数字変換
     function toHalfWidth(str) {
       return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
     }
 
-    // プレイ処理
-    window.playGame = async function() {
-      playClick();
-      const guessInput = document.getElementById("guess");
-      let guess = toHalfWidth(guessInput.value.trim());
+    document.getElementById("guess").addEventListener("input", (e) => {
+      const input = e.target;
+      const original = input.value;
+      const converted = original.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+      if (original !== converted) {
+        const cursor = input.selectionStart;
+        input.value = converted;
+        input.setSelectionRange(cursor, cursor);
+      }
+    });
 
+    function playGame() {
+      const guess = toHalfWidth(document.getElementById("guess").value.trim());
       if (!/^\d{3}$/.test(guess)) {
         alert("3桁の数字を入力してね");
         return;
@@ -255,146 +151,12 @@
       const log = document.getElementById("log");
       const entry = document.createElement("p");
       entry.textContent = `予想: ${guess} → 結果: ${hit} Hit / ${blow} Blow`;
-      entry.style.textAlign = "center";
-      if (hit === 3) {
-        entry.classList.add("correct");
-        playCorrect();
-        alert("3Hit！クリアおめでとう！");
-        await saveRecord(true);
-        startGame();
-        return;
-      }
+      if (hit === 3) entry.classList.add("correct");
       log.appendChild(entry);
 
-      await saveRecord(false);
-
-      guessInput.value = "";
-      guessInput.focus();
-    };
-
-    // Googleログイン
-    window.loginWithGoogle = async function() {
-      playClick();
-      const provider = new GoogleAuthProvider();
-      try {
-        const result = await signInWithPopup(auth, provider);
-        alert(`ようこそ、${result.user.displayName}！`);
-        loadUserStats(result.user.uid);
-        showSection("record");
-      } catch (error) {
-        alert("ログイン失敗: " + error.message);
-      }
-    };
-
-    // ログアウト
-    window.logout = async function() {
-      playClick();
-      await signOut(auth);
-      alert("ログアウトしました");
-      document.getElementById("userStats").innerHTML = "";
-      document.getElementById("ranking").innerHTML = "";
-    };
-
-    // 記録保存
-    async function saveRecord(clear = false) {
-      if (!auth.currentUser) return;
-      const uid = auth.currentUser.uid;
-      const docRef = doc(db, "users", uid);
-
-      try {
-        await runTransaction(db, async (t) => {
-          const docSnap = await t.get(docRef);
-          if (!docSnap.exists()) {
-            t.set(docRef, { plays: 1, clears: clear ? 1 : 0, name: auth.currentUser.displayName || "名無し" });
-          } else {
-            const data = docSnap.data();
-            t.update(docRef, {
-              plays: (data.plays || 0) + 1,
-              clears: (data.clears || 0) + (clear ? 1 : 0),
-              name: auth.currentUser.displayName || "名無し"
-            });
-          }
-        });
-        loadUserStats(uid);
-        loadRanking();
-      } catch (e) {
-        console.error(e);
-      }
+      document.getElementById("guess").value = "";
+      document.getElementById("guess").focus();
     }
-
-    // ユーザー記録表示
-    async function loadUserStats(uid) {
-      const docRef = doc(db, "users", uid);
-      const userStats = document.getElementById("userStats");
-      try {
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) {
-          userStats.innerHTML = "<p>記録がありません。</p><button onclick='logout()'>ログアウト</button>";
-        } else {
-          const data = docSnap.data();
-          userStats.innerHTML = `
-            <p>ユーザー名: ${data.name || "名無し"}</p>
-            <p>プレイ回数: ${data.plays || 0}</p>
-            <p>クリア回数: ${data.clears || 0}</p>
-            <button onclick="logout()">ログアウト</button>
-          `;
-        }
-      } catch (e) {
-        userStats.innerHTML = "<p>記録の読み込みに失敗しました。</p>";
-        console.error(e);
-      }
-    }
-
-    // ランキング表示
-    async function loadRanking() {
-      const rankingDiv = document.getElementById("ranking");
-      rankingDiv.innerHTML = "<p>ランキング読み込み中...</p>";
-      try {
-        const q = query(collection(db, "users"), orderBy("clears", "desc"), limit(10));
-        const querySnapshot = await getDocs(q);
-        let html = "<h3>ランキング（クリア回数上位10名）</h3><ol>";
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const name = data.name || docSnap.id.substring(0,6);
-          html += `<li>${name} - クリア: ${data.clears || 0}回</li>`;
-        });
-        html += "</ol>";
-        rankingDiv.innerHTML = html;
-      } catch (e) {
-        rankingDiv.innerHTML = "<p>ランキングの読み込みに失敗しました。</p>";
-        console.error(e);
-      }
-    }
-
-    // 初期化など
-    window.addEventListener("DOMContentLoaded", () => {
-      // 全角数字→半角自動変換
-      document.getElementById("guess").addEventListener("input", (e) => {
-        const half = e.target.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-        if (half !== e.target.value) e.target.value = half;
-      });
-
-      // Firebase認証状態変化監視
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          loadUserStats(user.uid);
-          loadRanking();
-          document.getElementById("loginBtn").style.display = "none";
-          document.getElementById("logoutBtn").style.display = "inline-block";
-        } else {
-          document.getElementById("userStats").innerHTML = "";
-          document.getElementById("ranking").innerHTML = "";
-          document.getElementById("loginBtn").style.display = "inline-block";
-          document.getElementById("logoutBtn").style.display = "none";
-        }
-      });
-
-      // ボタンイベント設定
-      document.getElementById("loginBtn").onclick = loginWithGoogle;
-      document.getElementById("logoutBtn").onclick = logout;
-
-      generateSecret();
-    });
   </script>
 </body>
 </html>
