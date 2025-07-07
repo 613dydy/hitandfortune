@@ -78,6 +78,13 @@
     #userStats p, #ranking ol {
       margin: 8px 0;
     }
+    #donateQR {
+      margin-top: 20px;
+      max-width: 200px;
+      border-radius: 10px;
+      border: 2px solid #FFD700;
+      box-shadow: 0 0 10px #FFD700;
+    }
   </style>
 </head>
 <body>
@@ -120,13 +127,14 @@
   <!-- 概要 -->
   <div class="section" id="section-about">
     <h2>概要</h2>
-    <p>暇つぶしにどうぞ！<br>暇なときはここで遊んで、お金も巻き上げられるかも？💰<br>寄付も大歓迎だよ！気が向いたらよろしくね💛</p>
+    <p>暇つぶしにどうぞ！<br>寄付も大歓迎だよ！気が向いたらよろしくね💛</p>
   </div>
 
   <!-- 寄付 -->
   <div class="section" id="section-donate">
     <h2>寄付</h2>
-    <p>まだ準備中だよ！</p>
+    <p>PayPayのQRコードはこちら！</p>
+    <img id="donateQR" src="https://qr.paypay.ne.jp/p2p01_Pi52F4YbQaCIx7de" alt="PayPay QRコード" />
   </div>
 
   <!-- 効果音 -->
@@ -136,7 +144,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, runTransaction, query, collection, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, runTransaction, query, collection, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
     // Firebase初期化
     const firebaseConfig = {
@@ -216,7 +224,6 @@
         if (!digits.includes(d)) digits.push(d);
       }
       secret = digits.join("");
-      //console.log("secret:", secret);
     }
 
     // 全角数字→半角数字変換
