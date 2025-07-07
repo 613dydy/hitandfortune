@@ -19,7 +19,6 @@
       margin-top: 80px;
       color: #FFD700;
       font-size: 2em;
-      text-align: center;
     }
     .menu-button {
       position: fixed;
@@ -77,9 +76,6 @@
       margin-top: 60px;
       position: relative;
       z-index: 10;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
     }
     #gameUI {
       display: none;
@@ -91,7 +87,6 @@
       padding: 10px;
       border-radius: 10px;
       border: 1px solid #444;
-      text-align: center;
     }
     .correct {
       color: #8fce00;
@@ -127,25 +122,28 @@
 <body>
   <div class="menu-button" onclick="toggleMenu()">☰</div>
   <div class="menu-list" id="menuList">
-    <button onclick="showSection('game')">ゲーム</button>
-    <button onclick="showSection('rules')">ルール</button>
-    <button onclick="showSection('record')">記録</button>
-    <button onclick="showSection('about')">自己紹介</button>
-    <button onclick="showSection('donate')">寄付</button>
+    <button onclick="playClick(); showSection('game')">ゲーム</button>
+    <button onclick="playClick(); showSection('rules')">ルール</button>
+    <button onclick="playClick(); showSection('record')">記録</button>
+    <button onclick="playClick(); showSection('about')">自己紹介</button>
+    <button onclick="playClick(); showSection('donate')">寄付</button>
   </div>
   <button id="bgmToggle" onclick="toggleBGM()">BGM オン/オフ</button>
-  <audio id="bgm" src="https://dl.sndup.net/xz6z/hitblow_bgm.mp3" loop></audio>
+
+  <audio id="bgm" src="https://dl.sndup.net/xz6z/hitblow_bgm.mp3" loop preload="auto"></audio>
+  <audio id="se-correct" src="https://dl.sndup.net/nsy2/correct.mp3" preload="auto"></audio>
+  <audio id="se-click" src="https://dl.sndup.net/8r5h/click.mp3" preload="auto"></audio>
 
   <h1>Hit & Blow</h1>
   <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
-  <button id="startBtn" onclick="startGame()">はじめる</button>
+  <button id="startBtn" onclick="playClick(); startGame()">はじめる</button>
 
   <div id="gameUI">
     <p style="margin-top: 20px; font-size: 16px; color: #ccc;">予想したい3ケタの数字を入力してね</p>
     <input id="guess" maxlength="3" placeholder="例:123" />
     <br />
-    <button onclick="playGame()">プレイ</button>
-    <button onclick="restartGame()">再プレイ</button>
+    <button onclick="playClick(); playGame()">プレイ</button>
+    <button onclick="playClick(); restartGame()">再プレイ</button>
     <div id="log"></div>
   </div>
 
@@ -191,6 +189,10 @@
     menu.style.display = menu.style.display === "block" ? "none" : "block";
   }
 
+  function playClick() {
+    document.getElementById("se-click").play().catch(()=>{});
+  }
+
   function showSection(id) {
     document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
     const section = document.getElementById("section-" + id);
@@ -228,7 +230,7 @@
   function toggleBGM() {
     const bgm = document.getElementById("bgm");
     if (bgm.paused) {
-      bgm.play();
+      bgm.play().catch(()=>{});
     } else {
       bgm.pause();
     }
@@ -257,6 +259,7 @@
     log.innerHTML += `<p>予想: ${input} → ${hit} Hit / ${blow} Blow</p>`;
 
     if (hit === 3) {
+      document.getElementById("se-correct").play().catch(()=>{});
       log.innerHTML += `<p class="correct">🎉 正解！新しい数字を用意したよ！</p>`;
       let record = loadRecord();
       record.clearCount++;
