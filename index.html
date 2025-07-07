@@ -83,30 +83,53 @@
   </style>
 </head>
 <body>
-  <!-- 省略（head部分以外は前と同じ） -->
+  <div class="menu-button" onclick="toggleMenu()">☰</div>
+  <div class="menu-list" id="menuList">
+    <button onclick="showSection('game')">ゲーム</button>
+    <button onclick="showSection('rules')">ルール</button>
+    <button onclick="showSection('record')">記録</button>
+    <button onclick="showSection('about')">自己紹介</button>
+    <button onclick="showSection('donate')">寄付</button>
+  </div>
 
-  <script type="module">
-    // 既存のコード内の toHalfWidth() を修正
-    function toHalfWidth(str) {
-      return str.replace(/[０-９]/g, (s) => {
-        const code = s.charCodeAt(0) - 0xFEE0;
-        return String.fromCharCode(code);
-      });
-    }
+  <h1>Hit & Blow</h1>
+  <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
+  <button id="startBtn" onclick="startGame()">はじめる</button>
 
-    // 既存の input イベントの重複防止（バグ：全角→半角変換で2倍になる問題対策）
-    document.addEventListener("DOMContentLoaded", () => {
-      const guessInput = document.getElementById("guess");
-      let lastValue = "";
+  <div id="gameUI">
+    <p style="margin-top: 20px; font-size: 16px; color: #ccc;">予想したい3ケタの数字を入力してね</p>
+    <input id="guess" maxlength="3" placeholder="例:123" inputmode="numeric" />
+    <button onclick="playGame()">プレイ</button>
+    <button onclick="restartGame()">再プレイ</button>
+    <div id="log"></div>
+  </div>
 
-      guessInput.addEventListener("input", (e) => {
-        const half = toHalfWidth(e.target.value);
-        if (half !== lastValue) {
-          e.target.value = half;
-          lastValue = half;
-        }
-      });
-    });
-  </script>
+  <div class="section" id="section-rules">
+    <h2>ルール</h2>
+    <p>3桁の数字を当てる記憶ゲームだよ。数字はすべて異なるよ。</p>
+  </div>
+
+  <div class="section" id="section-record">
+    <h2>記録とランキング</h2>
+    <button id="loginBtn">Googleでログイン</button>
+    <button id="logoutBtn" style="display:none;">ログアウト</button>
+    <div id="userStats"></div>
+    <div id="ranking"></div>
+  </div>
+
+  <div class="section" id="section-about">
+    <h2>自己紹介</h2>
+    <p>暇人です。お金ないです。寄付まってます💛</p>
+  </div>
+
+  <div class="section" id="section-donate">
+    <h2>寄付</h2>
+    <p>まだ準備中だよ！</p>
+  </div>
+
+  <audio id="correctSound" src="correct.mp3"></audio>
+  <audio id="clickSound" src="click.mp3"></audio>
+
+  <script type="module" src="main.js"></script>
 </body>
 </html>
