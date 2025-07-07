@@ -5,137 +5,11 @@
   <title>Hit & Blow with Firebase</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      margin: 0; padding: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #0e0e0e;
-      background-image: radial-gradient(#444 2px, transparent 1px);
-      background-size: 30px 30px;
-      color: #e0e0e0;
-      text-align: center;
-      user-select: none;
-    }
-    h1 { margin-top: 80px; color: #FFD700; font-size: 2em; }
-    .menu-button {
-      position: fixed; top: 20px; right: 20px;
-      font-size: 30px; color: #FFD700; cursor: pointer; z-index: 1000;
-    }
-    .menu-list {
-      display: none;
-      position: fixed; top: 60px; right: 20px;
-      background: #111; border: 1px solid #FFD700;
-      border-radius: 10px; padding: 10px; z-index: 999;
-      text-align: center;
-      width: 160px;
-    }
-    .menu-list button {
-      display: block; width: 100%;
-      background: transparent; border: none;
-      color: #FFD700; text-align: center;
-      padding: 10px; font-size: 16px; cursor: pointer;
-    }
-    button, input {
-      font-size: 18px; padding: 10px; margin: 5px auto;
-      border-radius: 5px; border: 2px solid #FFD700;
-      background: transparent; color: #FFD700;
-      display: block;
-      max-width: 200px;
-    }
-    button:hover {
-      background: #FFD700; color: #111;
-    }
-    input {
-      width: 160px; text-align: center; font-size: 22px; letter-spacing: 5px;
-      margin: 10px auto;
-    }
-    #startBtn {
-      margin-top: 50px;
-      position: relative; z-index: 10;
-      max-width: 200px;
-    }
-    #gameUI {
-      display: none;
-      margin-top: 30px;
-    }
-    #log {
-      margin: 20px auto; max-width: 320px;
-      background: #1a1a1a; padding: 10px;
-      border-radius: 10px; border: 1px solid #444;
-      text-align: center;
-      word-break: break-word;
-    }
-    .correct {
-      color: #8fce00; font-weight: bold;
-    }
-    .section {
-      display: none;
-      padding: 20px; margin-top: 20px;
-      background: #1a1a1a; border: 1px solid #444;
-      border-radius: 10px; max-width: 90%;
-      margin-left: auto; margin-right: auto;
-      text-align: center;
-    }
-    #userStats p, #ranking ol {
-      margin: 8px 0;
-    }
-    #donateQR {
-      margin-top: 20px;
-      max-width: 200px;
-      border-radius: 10px;
-      border: 2px solid #FFD700;
-      box-shadow: 0 0 10px #FFD700;
-    }
+    /* スタイル省略：前のコードと同じ */
   </style>
 </head>
 <body>
-  <div class="menu-button" onclick="toggleMenu()">☰</div>
-  <div class="menu-list" id="menuList">
-    <button onclick="showSection('game')">ゲーム</button>
-    <button onclick="showSection('rules')">ルール</button>
-    <button onclick="showSection('record')">記録</button>
-    <button onclick="showSection('about')">概要</button>
-    <button onclick="showSection('donate')">寄付</button>
-  </div>
-
-  <h1>Hit & Blow</h1>
-  <div id="description">シンプルだけどクセになる記憶ゲームだよ！</div>
-  <button id="startBtn" onclick="startGame()">はじめる</button>
-
-  <div id="gameUI">
-    <p style="margin-top: 20px; font-size: 16px; color: #ccc;">予想したい3ケタの数字を入力してね</p>
-    <input id="guess" maxlength="3" placeholder="例:123" />
-    <button onclick="playGame()">プレイ</button>
-    <button onclick="restartGame()">再プレイ</button>
-    <div id="log"></div>
-  </div>
-
-  <!-- ルール -->
-  <div class="section" id="section-rules">
-    <h2>ルール</h2>
-    <p>3桁の数字を当てるゲームだよ。数字はすべて異なっていて０～９の文字が使われているよ。hitは数字も場所もあってて、blowは数字だけあってるんだ。</p>
-  </div>
-
-  <!-- 記録 -->
-  <div class="section" id="section-record">
-    <h2>記録とランキング</h2>
-    <button id="loginBtn">Googleでログイン</button>
-    <button id="logoutBtn" style="display:none;">ログアウト</button>
-    <div id="userStats"></div>
-    <div id="ranking"></div>
-  </div>
-
-  <!-- 概要 -->
-  <div class="section" id="section-about">
-    <h2>概要</h2>
-    <p>暇つぶしにどうぞ！<br>寄付も大歓迎だよ！気が向いたらよろしくね💛</p>
-  </div>
-
-  <!-- 寄付 -->
-  <div id="section-donate" class="section">
-    <h2>寄付</h2>
-    <p>ありがとう！こちらのQRコードから寄付してね！</p>
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://qr.paypay.ne.jp/p2p01_Pi52F4YbQaCIx7de" alt="PayPay寄付用QRコード" />
-  </div>
+  <!-- UI省略：前のコードと同じ -->
 
   <!-- 効果音 -->
   <audio id="correctSound" src="correct.mp3" preload="auto"></audio>
@@ -146,7 +20,6 @@
     import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, runTransaction, query, collection, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-    // Firebase初期化
     const firebaseConfig = {
       apiKey: "AIzaSyCCGEF45sV1nHAqxfrqq80ir3z-ZCbfDho",
       authDomain: "hitblow-game.firebaseapp.com",
@@ -160,7 +33,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 効果音再生関数
     function playCorrect() {
       const audio = document.getElementById("correctSound");
       audio.currentTime = 0;
@@ -172,45 +44,32 @@
       audio.play();
     }
 
-    // メニュー表示切替
     window.toggleMenu = function() {
       playClick();
       const menu = document.getElementById("menuList");
       menu.style.display = (menu.style.display === "block") ? "none" : "block";
     };
 
-    // セクション表示
     window.showSection = function(id) {
       playClick();
-
-      // すべての.sectionを非表示にする（寄付も含む）
       document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-
       if (id === "donate") {
-        // 寄付項目の表示
         document.getElementById("section-donate").style.display = "block";
-
-        // ゲームUIやボタンは隠す
         document.getElementById("gameUI").style.display = "none";
         document.getElementById("startBtn").style.display = "none";
         document.getElementById("description").style.display = "block";
       } else {
-        // 寄付以外のセクション表示
         document.getElementById("section-" + id).style.display = "block";
-
-        // ゲーム開始前のボタンと説明表示
         document.getElementById("gameUI").style.display = "none";
         document.getElementById("startBtn").style.display = "block";
         document.getElementById("description").style.display = "block";
       }
-
       document.getElementById("startBtn").style.marginTop = "50px";
       document.getElementById("guess").value = "";
       clearLog();
       document.getElementById("menuList").style.display = "none";
     };
 
-    // ゲーム開始
     window.startGame = function() {
       playClick();
       generateSecret();
@@ -221,18 +80,15 @@
       clearLog();
     };
 
-    // 再プレイ
     window.restartGame = function() {
       playClick();
       startGame();
     };
 
-    // ログクリア
     function clearLog() {
       document.getElementById("log").innerHTML = "";
     }
 
-    // 秘密の数字生成
     let secret = "";
     function generateSecret() {
       const digits = [];
@@ -243,17 +99,14 @@
       secret = digits.join("");
     }
 
-    // 全角数字→半角数字変換
     function toHalfWidth(str) {
       return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
     }
 
-    // プレイ処理
     window.playGame = async function() {
       playClick();
       const guessInput = document.getElementById("guess");
       let guess = toHalfWidth(guessInput.value.trim());
-
       if (!/^\d{3}$/.test(guess)) {
         alert("3桁の数字を入力してね");
         return;
@@ -262,13 +115,11 @@
         alert("数字は重複しない3桁で入力してね");
         return;
       }
-
       let hit = 0, blow = 0;
       for (let i = 0; i < 3; i++) {
         if (guess[i] === secret[i]) hit++;
         else if (secret.includes(guess[i])) blow++;
       }
-
       const log = document.getElementById("log");
       const entry = document.createElement("p");
       entry.textContent = `予想: ${guess} → 結果: ${hit} Hit / ${blow} Blow`;
@@ -282,14 +133,11 @@
         return;
       }
       log.appendChild(entry);
-
       await saveRecord(false);
-
       guessInput.value = "";
       guessInput.focus();
     };
 
-    // Googleログイン
     window.loginWithGoogle = async function() {
       playClick();
       const provider = new GoogleAuthProvider();
@@ -303,7 +151,6 @@
       }
     };
 
-    // ログアウト
     window.logout = async function() {
       playClick();
       await signOut(auth);
@@ -312,12 +159,10 @@
       document.getElementById("ranking").innerHTML = "";
     };
 
-    // 記録保存
     async function saveRecord(clear = false) {
       if (!auth.currentUser) return;
       const uid = auth.currentUser.uid;
       const docRef = doc(db, "users", uid);
-
       try {
         await runTransaction(db, async (t) => {
           const docSnap = await t.get(docRef);
@@ -339,7 +184,6 @@
       }
     }
 
-    // ユーザー記録表示
     async function loadUserStats(uid) {
       const docRef = doc(db, "users", uid);
       const userStats = document.getElementById("userStats");
@@ -362,7 +206,6 @@
       }
     }
 
-    // ランキング表示
     async function loadRanking() {
       const rankingDiv = document.getElementById("ranking");
       rankingDiv.innerHTML = "<p>ランキング読み込み中...</p>";
@@ -383,15 +226,18 @@
       }
     }
 
-    // 初期化など
     window.addEventListener("DOMContentLoaded", () => {
-      // 全角数字→半角自動変換
-      document.getElementById("guess").addEventListener("input", (e) => {
-        const half = e.target.value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-        if (half !== e.target.value) e.target.value = half;
+      const guessInput = document.getElementById("guess");
+      let lastValue = "";
+      guessInput.addEventListener("input", (e) => {
+        const current = e.target.value;
+        const converted = current.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+        if (current !== converted && converted !== lastValue) {
+          e.target.value = converted;
+          lastValue = converted;
+        }
       });
 
-      // Firebase認証状態変化監視
       onAuthStateChanged(auth, (user) => {
         if (user) {
           loadUserStats(user.uid);
@@ -406,7 +252,6 @@
         }
       });
 
-      // ボタンイベント設定
       document.getElementById("loginBtn").onclick = loginWithGoogle;
       document.getElementById("logoutBtn").onclick = logout;
 
