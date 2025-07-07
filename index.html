@@ -7,20 +7,58 @@
     body {
       margin: 0;
       padding: 0;
-      background-color: #0e0e0e;
       font-family: 'Georgia', serif;
       color: #e0e0e0;
       text-align: center;
-      background-image: radial-gradient(#222 1px, transparent 1px);
-      background-size: 20px 20px; /* サイコロっぽい粒感 */
+      background-color: #0e0e0e;
+      background-image: radial-gradient(#555 2px, transparent 2px);
+      background-size: 30px 30px;
     }
 
     h1 {
       color: #FFD700;
       font-size: 36px;
-      margin-top: 50px;
-      margin-bottom: 20px;
+      margin-top: 60px;
       text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+    }
+
+    /* ハンバーガーメニュー */
+    .menu-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 30px;
+      color: #FFD700;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .menu-list {
+      display: none;
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      background: #111;
+      border: 1px solid #FFD700;
+      border-radius: 10px;
+      padding: 10px;
+      z-index: 999;
+    }
+
+    .menu-list button {
+      display: block;
+      width: 150px;
+      background: transparent;
+      border: none;
+      color: #FFD700;
+      text-align: left;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .menu-list button:hover {
+      background-color: #FFD70022;
     }
 
     #startBtn {
@@ -88,7 +126,7 @@
       box-shadow: 0 0 5px #000;
       min-height: 150px;
       overflow-y: auto;
-      text-align: center; /* ← 中央寄せに！ */
+      text-align: center;
     }
 
     #log p {
@@ -101,9 +139,27 @@
       font-weight: bold;
       text-shadow: 0 0 5px #8fce0080;
     }
+
+    .section {
+      margin: 40px auto;
+      max-width: 700px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
+
+  <div class="menu-button" onclick="toggleMenu()">☰</div>
+  <div class="menu-list" id="menuList">
+    <button onclick="showSection('game')">ゲーム</button>
+    <button onclick="showSection('rules')">ルール</button>
+    <button onclick="showSection('about')">自己紹介</button>
+    <button onclick="showSection('donate')">寄付</button>
+  </div>
 
   <h1>Hit & Blow Gamble</h1>
   <button id="startBtn" onclick="startGame()">はじめる</button>
@@ -117,8 +173,42 @@
     <div id="log"></div>
   </div>
 
+  <!-- 各セクション -->
+  <div class="section" id="section-game">
+    <h2>🎮 ゲームについて</h2>
+    <p>これはHit&Blowの3桁数字ゲームです。あなたの直感と記憶力が試されます！</p>
+  </div>
+
+  <div class="section" id="section-rules">
+    <h2>📜 ルール</h2>
+    <p>3桁の数字を入力してください。数字と位置が合っていれば「Hit」、位置が違えば「Blow」となります。3Hitで正解です！</p>
+  </div>
+
+  <div class="section" id="section-about">
+    <h2>👤 自己紹介</h2>
+    <p>このサイトは個人で作成しています。ご意見・フィードバック歓迎です。</p>
+  </div>
+
+  <div class="section" id="section-donate">
+    <h2>💰 寄付</h2>
+    <p>今後の開発のために寄付を受け付けています（※実装はまだ）</p>
+  </div>
+
   <script>
     let answer = [];
+
+    function toggleMenu() {
+      const menu = document.getElementById("menuList");
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    function showSection(id) {
+      document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+      document.getElementById(`section-${id}`).style.display = "block";
+      document.getElementById("gameUI").style.display = "none";
+      document.getElementById("startBtn").style.display = "block";
+      toggleMenu();
+    }
 
     function generateAnswer() {
       const digits = [];
@@ -133,6 +223,7 @@
       answer = generateAnswer();
       document.getElementById('startBtn').style.display = 'none';
       document.getElementById('gameUI').style.display = 'block';
+      document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
       clearLog();
     }
 
